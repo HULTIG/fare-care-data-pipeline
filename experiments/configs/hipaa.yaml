@@ -1,0 +1,59 @@
+# HIPAA Configuration
+# Complies with HIPAA Privacy Rule (45 CFR Part 160 and Subparts A and E of Part 164)
+# Safe Harbor method: Remove 18 identifiers
+
+anonymization:
+  technique: "kanonymity"
+  k: 5
+  epsilon: 1.0
+  quasi_identifiers: ["age", "location", "admission_date"]
+  
+pii_detection:
+  confidence_threshold: 0.90
+  techniques: ["regex", "nlp"]
+  # HIPAA 18 identifiers
+  entities: [
+    "PERSON",  # Names
+    "LOCATION",  # Geographic subdivisions smaller than state
+    "DATE_TIME",  # Dates (except year)
+    "phone",  # Telephone numbers
+    "fax",  # Fax numbers
+    "email",  # Email addresses
+    "ssn",  # Social Security numbers
+    "medical_record",  # Medical record numbers
+    "health_plan",  # Health plan beneficiary numbers
+    "account",  # Account numbers
+    "certificate",  # Certificate/license numbers
+    "vehicle",  # Vehicle identifiers
+    "device",  # Device identifiers
+    "url",  # Web URLs
+    "ip",  # IP addresses
+    "biometric",  # Biometric identifiers
+    "photo"  # Full-face photos
+  ]
+  remove_on_detection: true
+
+privacy:
+  max_reidentification_risk: 0.10
+  require_expert_determination: true  # Alternative to Safe Harbor
+  use_synthetic_data: false  # Can be enabled for Expert Determination
+
+fairness:
+  metrics: ["Statistical Parity Difference", "Equal Opportunity Difference"]
+  thresholds:
+    statistical_parity_difference: 0.10
+    equal_opportunity_difference: 0.10
+
+causal_validation: true
+bias_mitigation: true
+
+compliance:
+  regulation: "HIPAA"
+  safe_harbor_method: true
+  audit_trail_required: true
+  minimum_necessary: true
+
+weights:
+  bronze: 0.30
+  silver: 0.40
+  gold: 0.30

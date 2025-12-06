@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+ENV/
+env/
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data
+data/raw/*
+!data/raw/README.md
+data/processed/
+*.csv
+*.parquet
+*.delta
+
+# Results
+results/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.env
+
+# Spark
+metastore_db/
+derby.log
+spark-warehouse/

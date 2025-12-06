@@ -1,0 +1,24 @@
+import json
+import os
+from datetime import datetime
+
+class AuditTrail:
+    def __init__(self, log_dir: str = "results/logs"):
+        self.log_dir = log_dir
+        os.makedirs(log_dir, exist_ok=True)
+        self.log_file = os.path.join(log_dir, "audit_log.json")
+
+    def log_event(self, event_type: str, details: dict):
+        """
+        Logs an event to the audit trail.
+        """
+        event = {
+            "timestamp": datetime.now().isoformat(),
+            "event_type": event_type,
+            "details": details
+        }
+        
+        with open(self.log_file, "a") as f:
+            f.write(json.dumps(event) + "\n")
+            
+        print(f"Logged event: {event_type}")

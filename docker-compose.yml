@@ -1,0 +1,189 @@
+version: '3.8'
+
+services:
+  # Spark Master (Required for FAIR-CARE experiments)
+  spark-master:
+    image: apache/spark:3.5.0
+    container_name: spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    environment:
+      - SPARK_SUBMIT_OPTS=-Divy.cache.dir=/tmp -Divy.home=/tmp
+      # MSSQL credentials commented out as not needed for experiments
+      # - MSSQL_HOST=mssql-db
+      # - MSSQL_PORT=1433
+      # - MSSQL_USER=sa
+      # - MSSQL_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    volumes:
+      - ./spark-jobs:/opt/spark-jobs
+      - ./data:/data
+    networks:
+      - legal-etl-network
+
+  # Spark Worker (Required for FAIR-CARE experiments)
+  spark-worker:
+    image: apache/spark:3.5.0
+    container_name: spark-worker
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    environment:
+      - SPARK_SUBMIT_OPTS=-Divy.cache.dir=/tmp -Divy.home=/tmp
+    depends_on:
+      - spark-master
+    volumes:
+      - ./spark-jobs:/opt/spark-jobs
+      - ./data:/data
+    networks:
+      - legal-etl-network
+
+  # FAIR-CARE ML Service (The Experiment Runner)
+  ml:
+    build:
+      context: .
+      dockerfile: Dockerfile.ml
+    container_name: faircare-ml
+    volumes:
+      - ./src:/app/src
+      - ./configs:/app/configs
+      - ./scripts:/app/scripts
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./notebooks:/app/notebooks
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      # Postgres dependencies removed as they are unused
+    depends_on:
+      - spark-master
+    networks:
+      - legal-etl-network
+
+  # --- The following services are for the Legal Search Demo App and are disabled for Experiments ---
+
+  # # Mock SQL Server
+  # mssql:
+  #   image: mcr.microsoft.com/mssql/server:2022-latest
+  #   container_name: mssql-db
+  #   environment:
+  #     - ACCEPT_EULA=Y
+  #     - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+  #   ports:
+  #     - "1433:1433"
+  #   volumes:
+  #     - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+  #   networks:
+  #     - legal-etl-network
+
+  # # Qdrant Vector Database
+  # qdrant:
+  #   image: qdrant/qdrant:latest
+  #   container_name: qdrant-vector-db
+  #   ports:
+  #     - "6333:6333"
+  #     - "6334:6334"
+  #   volumes:
+  #     - qdrant_storage:/qdrant/storage
+  #   networks:
+  #     - legal-etl-network
+
+  # # RabbitMQ
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   container_name: rabbitmq
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: guest
+  #     RABBITMQ_DEFAULT_PASS: guest
+  #   networks:
+  #     - legal-etl-network
+
+  # # Redis
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: redis
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - legal-etl-network
+
+  # # Postgres (Unused/Misconfigured)
+  # # postgres:
+  # #   image: postgres:14
+  # #   container_name: superset-db
+  # #   environment:
+  # #     POSTGRES_DB: superset
+  # #     POSTGRES_USER: superset
+  # #     POSTGRES_PASSWORD: superset
+  # #   volumes:
+  # #     - superset_postgres:/var/lib/postgresql/data
+  # #   networks:
+  # #     - legal-etl-network
+
+  # # FastAPI Application
+  # api:
+  #   build: ./api
+  #   container_name: legal-search-api
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - QDRANT_HOST=qdrant-vector-db
+  #     - QDRANT_PORT=6333
+  #   depends_on:
+  #     - qdrant
+  #   networks:
+  #     - legal-etl-network
+
+  # # Celery Worker
+  # celery-worker:
+  #   build: ./api
+  #   container_name: legal-tasks-worker
+  #   command: celery -A celery_app worker --loglevel=info
+  #   environment:
+  #     - RABBITMQ_HOST=rabbitmq
+  #     - REDIS_HOST=redis
+  #     - QDRANT_HOST=qdrant-vector-db
+  #   depends_on:
+  #     - rabbitmq
+  #     - redis
+  #     - api
+  #   networks:
+  #     - legal-etl-network
+
+  # # Prefect Server
+  # prefect-server:
+  #   image: prefecthq/prefect:2-latest
+  #   container_name: prefect-server
+  #   command: prefect server start --host 0.0.0.0
+  #   ports:
+  #     - "4200:4200"
+  #   environment:
+  #     - PREFECT_UI_URL=http://localhost:4200/api
+  #     - PREFECT_API_URL=http://0.0.0.0:4200/api
+  #   networks:
+  #     - legal-etl-network
+
+  # # Prefect Worker
+  # prefect-worker:
+  #   image: prefecthq/prefect:2-latest
+  #   container_name: prefect-worker
+  #   command: prefect worker start --pool default-agent-pool --type process
+  #   environment:
+  #     - PREFECT_API_URL=http://prefect-server:4200/api
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - ./orchestration:/opt/orchestration
+  #   working_dir: /opt/orchestration
+  #   depends_on:
+  #     - prefect-server
+  #   networks:
+  #     - legal-etl-network
+
+volumes:
+  qdrant_storage:
+  superset_postgres:
+
+networks:
+  legal-etl-network:
+    driver: bridge

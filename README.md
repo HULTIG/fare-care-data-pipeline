@@ -1,0 +1,282 @@
+# FAIR-CARE Lakehouse: Ethical AI Data Governance Pipeline
+
+**Artifact for ICSA 2026 Submission**
+
+## Overview
+
+The FAIR-CARE Lakehouse is a reference architecture for ethical AI data governance that integrates:
+- **FAIR Principles**: Findability, Accessibility, Interoperability, and Reusability
+- **CARE Principles**: Causality, Anonymity, Regulatory-compliance, and Ethics
+
+This artifact implements a three-layer Medallion architecture (Bronze–Silver–Gold) with:
+- Privacy Enhancement Technologies (k-anonymity, differential privacy, synthetic data)
+- Causal inference validation
+- Fairness metrics and bias mitigation
+- Regulatory compliance checks (GDPR, HIPAA, CCPA)
+- Composite FAIR-CARE Score for ethical data readiness
+
+## Artifact Scope and Claims Supported
+
+| Paper Claim | Artifact Component |
+|-------------|-------------------|
+| Bronze Layer (Ingestion, PII Detection, Provenance) | `src/faircare/bronze/` |
+| Silver Layer (Anonymization, Utility, Causal Analysis) | `src/faircare/silver/` |
+| Gold Layer (Bias Mitigation, Fairness Metrics) | `src/faircare/gold/` |
+| FAIR-CARE Score Framework | `src/faircare/metrics/faircarescore.py` |
+| Experiment 1: Ablation Study | `experiments/scripts/runexperiment1.py` |
+| Experiment 2: Multi-Dataset Benchmarking | `experiments/scripts/runexperiment2.py` |
+| Experiment 3: Regulatory Configurations | `experiments/scripts/runexperiment3.py` |
+| GDPR/HIPAA/CCPA Compliance | `experiments/configs/{gdprstrict,hipaa,ccpa}.yaml` |
+
+## System Requirements
+
+### Hardware
+- **Recommended**: 16 GB RAM, 4+ CPU cores
+- **Minimum**: 8 GB RAM, 2 CPU cores
+- **GPU**: Optional (for LLM experiments)
+
+### Software
+- **OS**: Linux, macOS, or Windows with WSL2
+- **Docker**: 20.10+ with Docker Compose
+- **Python**: 3.9+ (if running natively)
+- **Internet**: Required for dataset downloads
+
+## Quick Installation (10 minutes)
+
+### Option A: Docker (Recommended)
+
+```bash
+# Extract artifact
+tar -xzf fair-care-lakehouse.tar.gz
+cd fair-care-lakehouse
+
+# Build and start services
+docker-compose build ml
+docker-compose up -d
+
+# Verify services are running
+docker-compose ps
+```
+
+### Option B: Native Python
+
+```bash
+# Create virtual environment
+python3.9 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+
+# Install package
+pip install -e .
+```
+
+## Dataset Setup
+
+**Important**: This artifact cannot include proprietary datasets. You must download them separately.
+
+### Automated Download (COMPAS, Adult, German Credit)
+
+```bash
+python scripts/downloaddatasets.py --datasets compas,adult,german
+```
+
+### Manual Download
+
+See `data/raw/README.md` for detailed instructions and URLs:
+
+- **COMPAS**: ProPublica COMPAS Recidivism Dataset
+- **Adult Census**: UCI Adult Income Dataset
+- **German Credit**: UCI German Credit Dataset
+- **NIJ Recidivism**: NIJ Recidivism Forecasting Challenge (requires NACJD access)
+
+For NIJ, after obtaining the dataset, run:
+```bash
+python scripts/preprocess_nij.py --input path/to/nij_raw.csv --output data/raw/nij/nij.csv
+```
+
+## One-Command Pipeline Run
+
+### Quick Demo (COMPAS)
+
+```bash
+# Using Docker
+docker-compose exec ml python -m faircare.orchestration.pipeline \
+  --dataset compas \
+  --config experiments/configs/default.yaml \
+  --output results/compas_demo \
+  --verbose
+
+# Native Python
+python -m faircare.orchestration.pipeline \
+  --dataset compas \
+  --config experiments/configs/default.yaml \
+  --output results/compas_demo \
+  --verbose
+```
+
+### Expected Output
+
+```
+results/compas_demo/
+├── bronze/                    # Bronze Delta tables
+├── silver/                    # Silver Delta tables
+├── gold/                      # Gold Delta tables
+├── logs/
+│   └── audit_log.json        # Provenance trail
+└── compas_metricssummary.json # FAIR-CARE scores and metrics
+```
+
+**Key Metrics in `compas_metricssummary.json`**:
+- `score`: Composite FAIR-CARE Score (0-1)
+- `status`: EXCELLENT (≥0.85), ACCEPTABLE (0.70-0.85), or AT RISK (<0.70)
+- `components.bronze`: Bronze layer score (SB)
+- `components.silver`: Silver layer score (SS)
+- `components.gold`: Gold layer score (SG)
+
+## Reproducing Paper Experiments
+
+### Experiment 1: Ablation Study
+
+Tests impact of removing key components (anonymization, causal validation, bias mitigation).
+
+```bash
+docker-compose exec ml python experiments/scripts/runexperiment1.py \
+  --datasets compas,adult,german,nij \
+  --configs baseline,configa,configb,configc \
+  --output results/exp1.csv
+```
+
+**Expected Runtime**: ~30 minutes  
+**Output**: `results/exp1.csv` with columns: dataset, config, SB, SS, SG, faircarescore, dpd, eod, utility
+
+### Experiment 2: Multi-Dataset Benchmarking
+
+Compares FAIR-CARE performance across all four datasets.
+
+```bash
+docker-compose exec ml python experiments/scripts/runexperiment2.py \
+  --datasets compas,adult,german,nij \
+  --config experiments/configs/default.yaml \
+  --output results/exp2.csv
+```
+
+**Expected Runtime**: ~45 minutes  
+**Output**: `results/exp2.csv` with fairness, utility, and privacy metrics per dataset
+
+### Experiment 3: Regulatory Configurations
+
+Tests GDPR, HIPAA, and CCPA compliance modes.
+
+```bash
+docker-compose exec ml python experiments/scripts/runexperiment3.py \
+  --datasets compas,adult,german,nij \
+  --regulations gdpr,hipaa,ccpa \
+  --output results/exp3.csv
+```
+
+**Expected Runtime**: ~40 minutes  
+**Output**: `results/exp3.csv` with compliance flags and privacy risk scores
+
+### Aggregate Results and Generate Figures
+
+```bash
+docker-compose exec ml python experiments/scripts/aggregateresults.py \
+  --inputs results/exp1.csv,results/exp2.csv,results/exp3.csv \
+  --output results/figures/
+```
+
+**Output**: Plots in `results/figures/` matching paper figures
+
+## Using the Dashboard
+
+```bash
+# Start Streamlit dashboard
+docker-compose exec ml streamlit run src/faircare/dashboard/app.py
+
+# Open browser to http://localhost:8501
+```
+
+**Dashboard Pages**:
+- **Overview**: FAIR-CARE scores across datasets
+- **Bronze**: PII detection results, provenance tracking
+- **Silver**: Anonymization metrics, utility assessment, causal graphs
+- **Gold**: Fairness metrics, bias mitigation results
+- **Experiments**: Interactive experiment comparison
+
+## Running Tests
+
+```bash
+# Run all tests
+docker-compose exec ml pytest tests/ -v
+
+# Run with coverage
+docker-compose exec ml pytest tests/ --cov=faircare --cov-report=html
+
+# Expected: 50+ tests, ~85% coverage
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Bronze Layer: PII Detection Timeout**
+- Reduce sample size in `configs/default.yaml`: `pii_detection.sample_size: 500`
+
+**Silver Layer: High Information Loss**
+- Decrease k-anonymity: `anonymization.k: 3`
+- Increase epsilon for DP: `anonymization.epsilon: 2.0`
+
+**FAIR-CARE Score Plateaus at ~0.75**
+- Check utility retention in Silver layer
+- Review causal validation results
+- Adjust fairness thresholds
+
+**GDPR Compliance Fails**
+- Ensure k ≥ 5 and epsilon ≤ 1.0
+- Check privacy risk in `metricssummary.json`
+
+See `docs/installation.md` for detailed troubleshooting.
+
+## Documentation
+
+- **[Architecture](docs/architecture.md)**: Bronze/Silver/Gold layer design
+- **[Installation](docs/installation.md)**: Detailed setup instructions
+- **[Experiments](docs/experiments.md)**: Step-by-step experiment reproduction
+- **[Configuration](docs/configuration.md)**: Config file reference
+- **[API](docs/api.md)**: Python API documentation
+
+## License and Citation
+
+This software is licensed under the Apache License 2.0. See `LICENSE` for details.
+
+To cite this work:
+```bibtex
+@software{faircare2025,
+  title = {FAIR-CARE Lakehouse: A Reference Architecture for Ethical AI Data Governance},
+  author = {Anonymous for Review},
+  year = {2025},
+  license = {Apache-2.0},
+  url = {https://anonymous.4open.science/r/fair-care-lakehouse}
+}
+```
+
+See `CITATION.cff` for machine-readable citation metadata.
+
+## Contact
+
+For questions about this artifact: **Anonymous for Review**
+
+---
+
+**Artifact Checklist**:
+- ✅ Complete source code
+- ✅ Configuration files for all experiments
+- ✅ Automated tests (50+ unit tests)
+- ✅ Documentation (README + 5 docs)
+- ✅ Dataset download scripts
+- ✅ One-command reproduction
+- ✅ Expected runtime: <60 minutes for full experiments
+- ✅ Results tolerance: ±5% of paper values
