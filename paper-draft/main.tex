@@ -142,6 +142,7 @@ No continuous fairness+privacy evaluation
 
 No causal HITL governance
 \end{comment}
+
 \section{Introduction}
 The growing integration of AI-driven decision-making into public-sector and safety-critical environments has introduced new pressures on software architecture. Traditional architectural concerns, performance, scalability, interoperability, are no longer sufficient when system outputs directly influence individual rights, access to resources, or legal determinations. In domains such as corrections, public safety, and healthcare, the software architect is increasingly responsible for ensuring that data infrastructures uphold principles of fairness, privacy, causal validity, and regulatory compliance. These requirements redefine the architectural role from solely optimizing technical qualities to governing socio-technical risks embedded in the data lifecycle, motivating the need for structured, end-to-end data governance pipelines such as the one depicted in Figure~\ref{fig:arch}. As AI systems become embedded in these sensitive settings, mounting evidence shows that trustworthiness depends not only on accuracy but also on robustness, transparency, accountability, and the mitigation of systemic and historical biases \cite{li2021trustworthy, mitchell2019model}. Algorithmic tools such as COMPAS have demonstrated racial disparities that arise even when protected attributes are excluded from training \cite{angwin2016machine, dressel2018accuracy}. In healthcare, biased datasets can propagate inequities in diagnosis and treatment \cite{plos2022healthcare}.  For instance, 
 Obermeyer et al. demonstrated that a widely-used commercial algorithm for managing patient care exhibited significant racial bias by using healthcare costs as a proxy for health needs, resulting in Black patients being systematically undertreated \cite{obermeyer2019dissecting}. Rajkomar et al. emphasize that ensuring fairness in healthcare ML requires attention throughout the entire development lifecycle \cite{rajkomar2018ensuring}. These cases illustrate that failures in data governance manifest as failures in system behavior, reinforcing the need for architectural frameworks that embed ethical safeguards \textit{by design} rather than as post-hoc patches.
@@ -195,6 +196,7 @@ To address these challenges, this paper introduces the \textbf{FAIR-CARE Lakehou
     
     \item \textbf{Empirical Validation:} Using benchmark datasets from the NIJ Recidivism Forecasting Challenge \cite{nij_challenge} and widely studied fairness datasets, we illustrate how legacy correctional data can be transformed into a compliant, fair, and analytically valuable asset.
 \end{enumerate}
+
 
 
 \section{Related Work}
@@ -575,12 +577,12 @@ To assess the architecture in a high-risk, real-world context, we evaluated the 
     \item \textbf{Gold Layer (Fairness):} After bias mitigation via AIF360 Reweighing, we achieved a significant reduction in Statistical Parity Difference, demonstrating that the architecture can actively correct historical biases with minimal loss in predictive utility (Final AUC $\approx$ 0.91).
 \end{itemize}
 
+Although the FAIR-CARE pipeline does not maximize predictive accuracy, it produces an \textit{ethically robust} model with demonstrable protections against discriminatory or privacy-violating behavior, as shown in Figure~\ref{fig:nij_case_study}, an essential property for correctional applications.
 
-Although the FAIR-CARE pipeline does not maximize predictive accuracy, it produces an \textit{ethically robust} model with demonstrable protections against discriminatory or privacy-violating behavior, an essential property for correctional applications.
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{images/fig_nij_case_study.png}
-    \caption{Case Study Results on NIJ Recidivism Dataset. The chart illustrates the trade-off between predictive utility (AUC) and fairness disparity. While the Baseline model achieves high AUC (0.92), it suffers from high disparity (EOD $\approx$ 0.18). The Gold Layer sacrifices negligible predictive power (AUC $\approx$ 0.91) to achieve a fairer model (EOD $\approx$ 0.07).}
+    \caption{Case Study Results on NIJ Recidivism Dataset. The chart illustrates the trade-off between predictive utility (AUC) and fairness disparity. While the Baseline model achieves high AUC (0.92), it suffers from high disparity (EOD $\approx$ 0.18). The Gold Layer sacrifices some predictive power (AUC $\approx$ 0.91) to achieve a fairer model (EOD $\approx$ 0.07).}
     \label{fig:nij_case_study}
 \end{figure}
 
