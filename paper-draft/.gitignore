@@ -1,0 +1,53 @@
+# Compiled output
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.brf
+*.idx
+*.ind
+*.lof
+*.log
+*.lot
+*.nav
+*.out
+*.pdf
+*.snm
+*.toc
+*.vrb
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.xdv
+*.dvi
+*.ps
+
+# Editor-specific files
+*~
+*.bak
+*.sav
+*.swp
+*.acn
+*.acr
+*.alg
+*.glg
+*.glo
+*.gls
+*.ist
+*.xdy
+
+# BibTeX / Biber files
+*.bbl
+*.blg
+*.run.xml
+
+# Makeindex / xindy files
+*.idx
+*.ilg
+*.ind
+
+# minted cache
+_minted*
+
+# Build directories
+build/

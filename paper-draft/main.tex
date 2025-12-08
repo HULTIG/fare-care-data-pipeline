@@ -613,13 +613,36 @@ We now evaluate the architectural implications in the context of regulatory fram
 Collectively, these results demonstrate that the FAIR-CARE Lakehouse not only improves fairness and privacy performance but also provides a principled architectural mechanism for satisfying regulatory mandates in high-risk AI systems.
 
 
-\section{Limitations}
-Despite these advances, several limitations remain:
-\begin{enumerate}
-    \item \textbf{Causal Reliance on Experts:} The Causal Graph construction in the Silver Layer relies on domain expert elicitation. While we use algorithmic validation to aid this, fully automated causal discovery remains an open research problem. Our current implementation focuses on validation rather than automated feature suppression.
-    \item \textbf{The "Price of Fairness":} As observed in the NIJ experiment, strict fairness constraints led to a performance drop. In scenarios where accuracy is paramount (e.g., violent crime prediction), this trade-off requires careful policy consideration beyond software architecture.
-    \item \textbf{Scope:} Our evaluation focused on tabular data. Unstructured modalities (video, audio) require different privacy mechanisms (e.g., deepfakes for anonymization) not covered here.
-\end{enumerate}
+\section{Threats to Validity}
+Despite the structured design of the FAIR-CARE Lakehouse and its alignment with regulatory and ethical principles, several threats to validity must be acknowledged.
+
+\subsection{Internal Validity}
+Internal validity concerns whether the observed improvements can be reliably attributed to the architecture.
+\begin{itemize}
+    \item \textbf{Causal Graph Correctness:} The causal graph construction in the Silver Layer depends on domain expert elicitation and algorithmic discovery (e.g., PC, NOTEARS). These algorithms are sensitive to hyperparameter choices and may be influenced by unobserved confounders. If the initial structure is flawed, subsequent filtering may be ineffective. We mitigated this via refutation tests (\textit{DoWhy}), but automated causal discovery remains an open challenge.
+    \item \textbf{Sensitivity to Privacy Parameters:} The Differential Privacy mechanisms (e.g., Laplace noise) introduce stochasticity. Small deviations in the privacy budget ($\epsilon$) or clipping thresholds can yield different utility-fairness trade-offs. While we fixed seeds for reproducibility, the inherent randomness of DP means that single-run results may vary slightly.
+\end{itemize}
+
+\subsection{External Validity}
+External validity pertains to the generalizability of our findings.
+\begin{itemize}
+    \item \textbf{Data Modality:} Our evaluation focused exclusively on structured tabular datasets. Unstructured modalities (video, text narratives) require distinct privacy mechanisms (e.g., redaction, blurring) not currently implemented in our Silver Layer.
+    \item \textbf{Socio-Legal Context:} The datasets used (COMPAS, NIJ, US Census) originate from the U.S. context. Bias patterns and regulatory requirements may differ significantly in international domains (e.g., EU healthcare or social services), meaning the specific causal structures observed here may not transfer directly.
+\end{itemize}
+
+\subsection{Construct Validity}
+Construct validity addresses whether our metrics accurate reflect ethical constructs.
+\begin{itemize}
+    \item \textbf{Metric Limitations:} We assessed fairness using group-based metrics (DPD, EOD). While standard, these do not capture individual fairness or long-term societal impact. Similarly, \textit{utility} was operationalized as AUC, which does not capture calibration or interpretability requirements.
+    \item \textbf{FAIR-CARE Score Subjectivity:} The composite score's weighting scheme ($w_S, w_G$) is architecturally defined. While meaningful for comparison, different stakeholder priorities might require alternative weightings (e.g., prioritizing privacy over fairness).
+\end{itemize}
+
+\subsection{Conclusion Validity}
+Conclusion validity relates to the statistical strength of our claims.
+\begin{itemize}
+    \item \textbf{Statistical Power:} Our quantitative evaluation is based on a limited number of benchmark datasets ($N=4$). While we observed consistent trends, some paired comparisons lacked statistical significance at $p < 0.05$.
+    \item \textbf{Real-World Robustness:} The fairness gains observed in static benchmarks may differ in production environments subject to distribution shift (data drift) or adversarial behavior. Future work must validate the architecture's resilience to dynamic data updates.
+\end{itemize}
 
 \subsection*{Artifact Availability}
 To support reproducibility, we provide an anonymized code repository with the full FAIR-CARE pipeline implementation and experiment scripts at the following URL (anonymized for review): \url{https://anonymous.4open.science/r/XXXX}. 
@@ -640,6 +663,6 @@ A natural extension of this architecture is \textbf{Federated Learning (FL)}. In
 This work is supported by UIDB/04516/2020 of NOVA Laboratory for Computer Science and Informatics (NOVA LINCS), funded by FCT.IP. It also receives funding from the COMPETE2030 program under the Horus 360 iOMS NextGen project (COMPETE2030-FEDER-01316200).
 \end{comment}
 
-% \printbibliography
+\printbibliography
 
 \end{document}
