@@ -33,7 +33,6 @@ The FAIR-CARE Lakehouse implements a three-layer Medallion architecture that pro
 - **Anonymization** (`anonymization.py`): k-anonymity, l-diversity, t-closeness, differential privacy
 - **Utility Assessment** (`utilityassessment.py`): Correlation preservation, predictive utility
 - **Causal Analysis** (`causalanalysis.py`): DoWhy-based causal validation and refutation
-- **Human-in-the-Loop** (`humaninloop.py`): Expert review interface
 
 **Outputs**:
 - Silver Delta tables (anonymized)

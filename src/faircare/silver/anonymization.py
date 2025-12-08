@@ -39,6 +39,15 @@ class AnonymizationEngine:
         # Calculate privacy metrics
         risk = self._calculate_risk(pdf, technique)
         
+        if pdf.empty:
+            # Handle empty dataframe case to avoid inference errors
+            # construct schema based on original df but with string types for safety as anonymization often converts to string
+            from pyspark.sql.types import StringType
+            schema = df.schema
+            for field in schema:
+                field.dataType = StringType()
+            return spark.createDataFrame([], schema), {"risk": risk}
+
         return spark.createDataFrame(pdf), {"risk": risk}
 
     def _calculate_risk(self, df: pd.DataFrame, technique: str) -> float:

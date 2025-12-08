@@ -174,7 +174,7 @@ def test_error_key_on_failure(spark):
     """Test that error key is present on calculation failure"""
     data = [(None, None)]
     pdf = pd.DataFrame(data, columns=["protected_attr", "label"])
-    invalid_df = spark.createDataFrame(pdf)
+    invalid_df = spark.createDataFrame(pdf, schema="protected_attr STRING, label INT")
     
     config = {
         "protected_attribute": "protected_attr",

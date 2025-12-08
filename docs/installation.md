@@ -41,9 +41,7 @@ docker-compose up -d
 docker-compose ps
 
 # Expected output:
-# faircare-ml       running
-# spark-master      running
-# postgres          running
+# ml       running
 ```
 
 #### Step 5: Test Pipeline
@@ -168,14 +166,11 @@ python -m faircare.orchestration.pipeline \
 
 ### Run Tests
 ```bash
-# Docker
-docker-compose exec ml pytest tests/ -v
-
-# Native
+# Native Python (recommended)
 pytest tests/ -v
 ```
 
-**Expected**: 50+ tests pass, ~85% coverage
+**Expected**: Tests pass successfully
 
 ## Troubleshooting
 

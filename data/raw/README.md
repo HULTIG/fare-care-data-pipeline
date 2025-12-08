@@ -81,17 +81,11 @@ python scripts/downloaddatasets.py --datasets compas,adult,german
 
 ## Verification
 
-After downloading, verify the datasets:
-
-```bash
-python scripts/verify_datasets.py
-```
-
-This will check:
-- File existence
-- Expected number of rows (±10%)
-- Required columns present
-- No completely empty columns
+After downloading, verify the datasets by checking:
+- File existence in `data/raw/{dataset}/` directories
+- Expected number of rows (see table above)
+- Required columns present (see Expected Columns sections)
+- Files open correctly with pandas
 
 ## Data Privacy Notice
 

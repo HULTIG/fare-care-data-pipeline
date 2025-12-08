@@ -38,6 +38,7 @@ services:
     container_name: faircare-ml
     volumes:
       - ./src:/app/src
+      - ./tests:/app/tests
       - ./configs:/app/configs
       - ./scripts:/app/scripts
       - ./data:/app/data

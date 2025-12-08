@@ -28,7 +28,7 @@ def test_calculate_excellent_score(default_config):
     scorer = FAIRCAREScore(default_config)
     result = scorer.calculate(sb=0.9, ss=0.9, sg=0.9)
     
-    assert result["score"] == 0.9
+    assert result["score"] == pytest.approx(0.9)
     assert result["status"] == "EXCELLENT"
     assert result["components"]["bronze"] == 0.9
     assert result["components"]["silver"] == 0.9

@@ -85,14 +85,13 @@ Affiliations withheld to preserve anonymity.}
 \maketitle
 
 \begin{abstract}
-The \textit{FAIR-CARE Lakehouse} is introduced as a reference architecture for ethically governed data pipelines in high-risk AI systems. The increasing growth of data-driven decision-making and its entry into sensitive areas such as corrections, public safety, and healthcare should require software architects to design infrastructures that ensure not only scalability and data quality, but also fairness, privacy, causal integrity, and regulatory compliance.Traditional ETL and lakehouse pipelines remain limited in their ability to address structural bias, preserve anonymization guarantees, or embed governance mechanisms throughout the data lifecycle. 
-Our architecture integrates FAIR data principles with the CARE framework, encompassing Causality, Anonymity, Regulatory Compliance, and Ethics, across the Medallion layers of a lakehouse pipeline.The design includes privacy considerations, improved transformations, causal modeling, schema management, vectorization components, and human supervision in the loop to support downstream tasks such as recidivism prediction and LLM agents enhanced with retrieval. We also propose a layer-specific evaluation metric that measures ethical readiness, called the “FAIR-CARE Score,” which is calculated by assessing privacy loss, fairness inequalities, lineage completeness, and causality validity. The approach is validated using widely studied datasets in fairness research, including COMPAS, Adult Census, German Credit, and the NIJ Recidivism Forecasting Challenge, demonstrating that ethical guarantees can be embedded into data pipelines while retaining sufficient analytical utility. This work provides software architects with a structured and actionable blueprint for designing governed data infrastructures capable of supporting trustworthy AI in high-risk environments.
+AI systems deployed in high-risk public-sector domains increasingly depend on data pipelines whose architectural properties directly shape fairness, privacy, and accountability. Existing data lakehouse and ETL architectures provide strong guarantees for quality and scalability, yet lack mechanisms to prevent historical bias, privacy leakage, and regulatory non-compliance from propagating into downstream models. To address this gap, we propose the \textit{FAIR-CARE Lakehouse}, a reference architecture that embeds FAIR data principles together with causal validity, differential privacy, and fairness-by-design constraints across the Medallion (Bronze–Silver–Gold) lifecycle. The architecture integrates PII detection, privacy-preserving transformations, causal structure learning, and fairness-aware feature governance into an end-to-end pipeline supported by a measurable \textit{FAIR-CARE Score} that quantifies ethical readiness. We validate the approach using benchmark datasets (COMPAS, Adult, German Credit) and a high-risk case study from the NIJ Recidivism Challenge. Results show that the architecture reduces Equalized Odds disparities by up to 60\% while maintaining competitive predictive performance under strict privacy budgets. These findings demonstrate that ethical guarantees can be enforced as architectural constraints rather than post-hoc interventions. The work contributes a reusable reference architecture, an operational scoring framework, and empirical evidence illustrating how software architects can govern socio-technical risks in continuous AI-enabled systems.
 \end{abstract}
 
 
 
 \begin{IEEEkeywords}
-Lakehouse Architeture, Ethical Data Pipeline, Bias Mitigation,Data Anonymization, Data Governance, Data Provenance
+Lakehouse Architecture, Ethical Data Pipeline, Bias Mitigation,Data Anonymization, Data Governance, Data Provenance
 \end{IEEEkeywords}
 
 \begin{comment}
@@ -148,7 +147,7 @@ The growing integration of AI-driven decision-making into public-sector and safe
 Obermeyer et al. demonstrated that a widely-used commercial algorithm for managing patient care exhibited significant racial bias by using healthcare costs as a proxy for health needs, resulting in Black patients being systematically undertreated \cite{obermeyer2019dissecting}. Rajkomar et al. emphasize that ensuring fairness in healthcare ML requires attention throughout the entire development lifecycle \cite{rajkomar2018ensuring}. These cases illustrate that failures in data governance manifest as failures in system behavior, reinforcing the need for architectural frameworks that embed ethical safeguards \textit{by design} rather than as post-hoc patches.
 \begin{figure*}[t]
     \centering
-    \includegraphics[width=\textwidth]{arch - Copy.png}
+    \includegraphics[width=\textwidth]{images/arch.png}
     \caption{The FAIR-CARE Lakehouse pipeline architecture, illustrating the end-to-end governance flow across the Bronze, Silver, and Gold layers. Each stage embeds privacy, causal validity, and fairness mechanisms into the data lifecycle.}
     \label{fig:arch}
 \end{figure*}
@@ -197,17 +196,27 @@ To address these challenges, this paper introduces the \textbf{FAIR-CARE Lakehou
     \item \textbf{Empirical Validation:} Using benchmark datasets from the NIJ Recidivism Forecasting Challenge \cite{nij_challenge} and widely studied fairness datasets, we illustrate how legacy correctional data can be transformed into a compliant, fair, and analytically valuable asset.
 \end{enumerate}
 
-
-
 \section{Related Work}
 
-Research on trustworthy AI, privacy-preserving data engineering, and data lakehouse architectures has expanded significantly in the past decade, yet existing approaches remain fragmented and insufficient for high-risk AI systems. Prior work in AI ethics has extensively documented the harms arising from biased datasets and opaque model pipelines \cite{li2021trustworthy, mitchell2019model}. Studies on recidivism risk assessment, such as those analyzing COMPAS, show that models continue to reproduce racial disparities even when explicit sensitive attributes are removed \cite{angwin2016machine, dressel2018accuracy}. However, these analyses typically focus on model-level behavior rather than on the architectural structures that propagate bias. As a result, the literature does not offer a principled architectural mechanism for ensuring that fairness and causal integrity are preserved across the data lifecycle.
+Research on trustworthy AI, privacy-preserving data engineering, and data lakehouse architectures has advanced substantially, yet existing approaches remain siloed and insufficient for architecting high-risk AI systems. Prior work in AI ethics has thoroughly documented how biased datasets, opaque transformations, and ungoverned model pipelines can propagate systemic harms \cite{li2021trustworthy, mitchell2019model}. Analyses of recidivism risk assessment tools such as COMPAS demonstrate that eliminating protected attributes does not prevent disparate outcomes when upstream data transformations embed structural proxies for race or socioeconomic status \cite{angwin2016machine, dressel2018accuracy}. However, these studies focus predominantly on model-level fairness interventions. They offer limited insight into how architectural decisions within data pipelines contribute to bias propagation. As a result, the literature lacks pipeline-level mechanisms for ensuring that fairness, causal validity, and transparency are preserved across the entire data lifecycle.
 
-Similarly, research on regulatory compliance provides detailed interpretations of GDPR, HIPAA, and CCPA requirements, especially regarding anonymization and re-identification risk \cite{edpb2014anonymization, hipaa_method, ccpa2018}. Yet, existing engineering practices primarily apply these regulations through ad-hoc masking rules, access policies, or manual review processes, approaches that are brittle and difficult to scale. The lack of architectural enforcement means that compliance is evaluated only after data has already propagated through multiple systems, creating opportunities for leakage or misuse. None of these works provide architectural abstractions that embed compliance guarantees into the pipeline itself.
+Regulatory frameworks such as GDPR, HIPAA, and CCPA provide detailed criteria for anonymization, pseudonymization, and functional separation \cite{edpb2014anonymization, hipaa_method, ccpa2018}. Yet engineering practice often implements these requirements through ad-hoc masking rules, retrospective audits, or access-control policies approaches that are brittle, manually intensive, and poorly aligned with continuous data flows in modern architectures. Because compliance checks occur only after data has traversed multiple systems, opportunities for leakage or misuse remain. Existing compliance research thus provides conceptual clarity but lacks architectural abstractions that enforce privacy guarantees at design time rather than as post-hoc corrections.
+
+Work at the intersection of privacy-preserving data engineering and algorithmic fairness provides important building blocks, including Differential Privacy (DP) \cite{dwork2006calibrating}, synthetic data generation techniques \cite{schneider2022investigating}, and fairness metrics such as Equalized Odds and Demographic Parity \cite{hardt2016equality}. Causal frameworks such as Counterfactual Fairness \cite{kusner2017counterfactual} offer principled tools for identifying spurious dependencies. Yet these methods are typically applied in isolation, at the modeling stage, and are rarely integrated into upstream transformation logic. Moreover, pipeline implementations seldom track lineage or enforce governance constraints that ensure these methods are applied consistently and auditable over time. Existing ML pipelines therefore treat ethical safeguards as preprocessing steps, not as continuous architectural guarantees.
+
+Data lakehouse architectures most notably the Medallion pattern (Bronze–Silver–Gold) \cite{databricks_medallion} deliver strong support for schema evolution, scalable ETL/ELT, and analytical readiness. However, their native capabilities stop at data quality and access control; they do not encode fairness constraints, privacy budgets, causal validation, or regulatory mappings into the semantics of pipeline transformations. Audit logs and cataloging systems offer partial governance, but ethical guarantees are not woven into the architectural fabric. As a result, lakehouses provide a promising structural foundation but fall short of supporting high-risk AI workloads requiring provable governance.
+
+The limitations of existing approaches are summarized in Table~\ref{tab:rw_compare}. Across domains, the literature provides conceptual tools (fairness metrics, privacy mechanisms, causal reasoning), but there is no unified architecture that:  
+(1) treats fairness and privacy as first-class architectural concerns;  
+(2) integrates PETs, causal validation, and fairness filtering directly into Medallion-layer transformations;  
+(3) ensures continuous, lineage-aware governance; and  
+(4) provides a measurable governance metric for dataset readiness.  
+The FAIR-CARE Lakehouse directly addresses these gaps by operationalizing ethical constraints as intrinsic pipeline properties rather than external evaluations.
 
 \begin{table*}[ht]
 \centering
 \caption{Comparison of Existing Approaches and the FAIR-CARE Lakehouse}
+\label{tab:rw_compare}
 \begin{tabular}{p{3.6cm} p{3.8cm} p{4.0cm} p{4.2cm}}
 \toprule
 \textbf{Approach} & \textbf{Strengths in Literature} & \textbf{Limitations for High-Risk AI Systems} & \textbf{How FAIR-CARE Lakehouse Addresses the Gap} \\
@@ -242,49 +251,10 @@ Extends Medallion architecture with CARE governance mechanisms and FAIR-CARE sco
 \end{tabular}
 \end{table*}
 
-Beyond corrections, healthcare has similarly demonstrated how algorithmic bias can systematically disadvantage vulnerable populations. Obermeyer et al. \cite{obermeyer2019dissecting} revealed that a commercial risk prediction algorithm used on over 200 million patients exhibited substantial racial bias, with Black patients requiring significantly more chronic conditions than White patients to receive the same risk score. Rajkomar et al. \cite{rajkomar2018ensuring} provide a comprehensive framework for 
-ensuring fairness throughout the ML lifecycle in healthcare, emphasizing the need for diverse training data and continuous monitoring—principles directly applicable to correctional systems.
+In adjacent domains such as healthcare, large-scale studies highlight how ungoverned data pipelines can encode and magnify structural inequities. Obermeyer et al.\ \cite{obermeyer2019dissecting} revealed pervasive racial bias in a commercial health risk model affecting over 200 million patients, rooted not in model algorithms but in upstream data proxies. Rajkomar et al.\ \cite{rajkomar2018ensuring} emphasize the need for continuous lifecycle monitoring and stewardship principles parallel to those required for correctional systems. These findings further reinforce that high-risk domains demand architectural, not merely algorithmic, interventions.
 
-Work on fairness and causal inference has introduced metrics such as Demographic Parity and Equalized Odds \cite{hardt2016equality}, alongside causal frameworks such as Counterfactual Fairness \cite{kusner2017counterfactual}. While these contributions are theoretically powerful, they are typically implemented at the modeling stage, after data transformation has already occurred. Existing ML pipelines do not ensure that upstream transformations preserve causal validity or prevent the introduction of spurious relationships. Consequently, fairness interventions are reactive rather than structural, and pipeline-level sources of bias remain unaddressed. Privacy-preserving data engineering research provides foundational techniques including $k$-anonymity, $l$-diversity, and Differential Privacy (DP) \cite{sweeney2002k, machanavajjhala2007l, dwork2006calibrating}. More recent work demonstrates that combining DP with Synthetic Data Generation (SDG) can preserve utility while reducing re-identification risk \cite{schneider2022investigating}. However, these techniques are rarely operationalized as architectural layers with lineage guarantees, policy enforcement, and measurable governance outcomes. They are typically one-off preprocessing steps rather than continuous, auditable transformations within a governed pipeline.
+Taken together, existing research provides essential conceptual components fairness metrics, differential privacy, causal reasoning, and scalable lakehouse infrastructures, but does not unify them into a governed architecture capable of supporting high-risk AI systems. The FAIR-CARE Lakehouse fills this gap by embedding ethical constraints into the structural layers of the Medallion architecture, enabling continuous, auditable, and legally aligned data governance.
 
-Data lakehouse architectures, particularly the Medallion pattern (Bronze--Silver--Gold), offer strong support for schema evolution, data cleaning, and analytical readiness \cite{databricks_medallion}. Yet, their existing implementations do not natively address fairness, privacy, causal soundness, or regulatory compliance. Governance features such as audit logs and access control exist, but ethical and regulatory safeguards are not woven into the transformation logic of each layer. Thus, while the lakehouse paradigm is architecturally promising, it lacks the mechanisms required for legally compliant, ethically governed, high-risk AI systems.
-
-Taken together, the existing body of work provides valuable conceptual tools but lacks a unified architecture that:  
-(1) embeds privacy and fairness as first-class architectural concerns;  
-(2) integrates causal validation and PETs directly into Medallion-layer transformations;  
-(3) maps technical settings to regulatory frameworks; and  
-(4) offers a measurable governance metric for dataset readiness.  
-
-The FAIR-CARE Lakehouse addresses these gaps by providing an architecture that operationalizes ethical governance as an intrinsic property of the data pipeline rather than an external process.
-
-\begin{comment}
-\section{Methodology}
-
-\subsection{Architectural Overview}
-FAIR-CARE Reference Architecture - High-level diagram; architectural style; components.
-
-Layer 1: Bronze (Raw Ingestion with FAIR-CARE Enhancements)
-Provenance tracking
-
-PII/SPI auto-detection
-
-Baseline bias estimation
-Layer 2: Silver (Cleansing, Anonymization, and Causal Governance)
-
-Multi-method anonymization engine
-
-Construction of causal DAGs
-
-HITL causal validation interface
-
-Layer 3: Gold (Fair & Feature-Ready Outputs)
-
-Bias mitigation techniques
-
-Fairness metrics computation
-
-Embedding + RAG/CAG preparation
-\end{comment}
 
 \section{Methodology}
 
@@ -407,9 +377,18 @@ Algorithm \ref{alg:privacy_transformer} demonstrates the logic for the ``Privacy
 
 % \subsubsection{Causal Validity}
 % Using the \textit{DoWhy} refutation test, we validated the causal graphs generated in the Silver Layer. The inclusion of a causal filter rejected 14\% of features that were highly correlated with the target but statistically determined to be spurious (non-causal) proxies for race. This structurally prevents the model from learning bias, a capability absent in standard feature selection methods.
-\subsection{Experimental Evaluation}
+\subsection{Architectural Assumptions and Quality Attribute Trade-offs}
+The FAIR-CARE Lakehouse architecture is grounded on several architectural assumptions that guide its design choices and influence its quality attribute trade-offs. First, the architecture assumes that privacy, fairness, and utility cannot be simultaneously maximized; instead, they form a three-way trade-off space analogous to the classical ``Security–Performance'' tension in software architecture. By introducing Differential Privacy, causal filtering, and synthetic data generation in the Silver layer, the system explicitly prioritizes privacy and fairness over raw predictive performance. This trade-off reflects the requirements of high-risk domains, where ethical and legal constraints override marginal accuracy gains.
 
-\subsubsection{Datasets}
+From an architectural evaluation perspective, the pipeline can be analyzed using scenario-based reasoning inspired by ATAM and QAW-lite. Key scenarios include: (i) \textit{privacy degradation under repeated queries}, (ii) \textit{fairness drift when upstream attributes shift over time}, and (iii) \textit{utility losses when stronger anonymity parameters are applied}. These scenarios inform the placement of Privacy Budgets, Causal DAG validators, and lineage metadata within the pipeline. Although a full ATAM evaluation is beyond the scope of this paper, the architecture incorporates the essential rationale of aligning design decisions with quality attribute priorities.
+
+A further assumption underpinning the architecture is the availability of human expertise to validate causal structures. While the Silver layer provides automated causal discovery, domain experts (e.g., criminologists, legal scholars, or social scientists) must review and refine the discovered DAGs to ensure that critical causal relationships are preserved while spurious or ethically inappropriate paths are removed. This Human-in-the-Loop (HITL) component is not merely a procedural step but an architectural mechanism: the pipeline enforces expert validation checkpoints before data is promoted from the Silver to the Gold layer. This requirement introduces additional operational cost but improves causal validity and regulatory defensibility.
+
+Collectively, these assumptions and trade-offs clarify the architectural role of the FAIR-CARE Lakehouse: it is not a pipeline optimized for maximum predictive accuracy, but a governed data architecture designed to operationalize ethical, legal, and causal constraints as first-class architectural concerns.
+
+\section{Experimental Evaluation}
+
+\subsection{Datasets}
 We validate the FAIR-CARE Lakehouse architecture using four widely studied benchmark datasets in fairness and high-risk decision-making research \cite{li2021trustworthy, nij_challenge}. These datasets span correctional forecasting, credit scoring, and income prediction, domains where fairness, privacy, and causal integrity are critical:
 \begin{itemize}
     \item \textbf{NIJ Recidivism Challenge:} A correctional dataset containing over 25{,}000 records with sensitive behavioral and supervision attributes, including ground-truth recidivism outcomes \cite{nij_context}.
@@ -452,7 +431,7 @@ These datasets exhibit varying degrees of class imbalance (24-45\% positive clas
     \label{fig:eda}
 \end{figure}
 
-\subsubsection{Experimental Setup}
+\subsection{Experimental Setup}
 
 Experiments were executed on a Spark-based cluster configured with four worker nodes (16 vCPUs each). Spark handles the ingestion and Bronze-layer transformations, while the Silver and Gold layer components for causal discovery, DP-SGD synthetic data generation, and privacy verification are implemented as modular Python workflows orchestrated within the Spark-driven pipeline, without deploying the Ray-based execution model that is proposed in the reference architecture for future large-scale deployments.
 
@@ -613,49 +592,48 @@ We now evaluate the architectural implications in the context of regulatory fram
 Collectively, these results demonstrate that the FAIR-CARE Lakehouse not only improves fairness and privacy performance but also provides a principled architectural mechanism for satisfying regulatory mandates in high-risk AI systems.
 
 
-\section{Threats to Validity}
-Despite the structured design of the FAIR-CARE Lakehouse and its alignment with regulatory and ethical principles, several threats to validity must be acknowledged.
-
-\subsection{Internal Validity}
-Internal validity concerns whether the observed improvements can be reliably attributed to the architecture.
-\begin{itemize}
-    \item \textbf{Causal Graph Correctness:} The causal graph construction in the Silver Layer depends on domain expert elicitation and algorithmic discovery (e.g., PC, NOTEARS). These algorithms are sensitive to hyperparameter choices and may be influenced by unobserved confounders. If the initial structure is flawed, subsequent filtering may be ineffective. We mitigated this via refutation tests (\textit{DoWhy}), but automated causal discovery remains an open challenge.
-    \item \textbf{Sensitivity to Privacy Parameters:} The Differential Privacy mechanisms (e.g., Laplace noise) introduce stochasticity. Small deviations in the privacy budget ($\epsilon$) or clipping thresholds can yield different utility-fairness trade-offs. While we fixed seeds for reproducibility, the inherent randomness of DP means that single-run results may vary slightly.
-\end{itemize}
-
-\subsection{External Validity}
-External validity pertains to the generalizability of our findings.
-\begin{itemize}
-    \item \textbf{Data Modality:} Our evaluation focused exclusively on structured tabular datasets. Unstructured modalities (video, text narratives) require distinct privacy mechanisms (e.g., redaction, blurring) not currently implemented in our Silver Layer.
-    \item \textbf{Socio-Legal Context:} The datasets used (COMPAS, NIJ, US Census) originate from the U.S. context. Bias patterns and regulatory requirements may differ significantly in international domains (e.g., EU healthcare or social services), meaning the specific causal structures observed here may not transfer directly.
-\end{itemize}
-
-\subsection{Construct Validity}
-Construct validity addresses whether our metrics accurate reflect ethical constructs.
-\begin{itemize}
-    \item \textbf{Metric Limitations:} We assessed fairness using group-based metrics (DPD, EOD). While standard, these do not capture individual fairness or long-term societal impact. Similarly, \textit{utility} was operationalized as AUC, which does not capture calibration or interpretability requirements.
-    \item \textbf{FAIR-CARE Score Subjectivity:} The composite score's weighting scheme ($w_S, w_G$) is architecturally defined. While meaningful for comparison, different stakeholder priorities might require alternative weightings (e.g., prioritizing privacy over fairness).
-\end{itemize}
-
-\subsection{Conclusion Validity}
-Conclusion validity relates to the statistical strength of our claims.
-\begin{itemize}
-    \item \textbf{Statistical Power:} Our quantitative evaluation is based on a limited number of benchmark datasets ($N=4$). While we observed consistent trends, some paired comparisons lacked statistical significance at $p < 0.05$.
-    \item \textbf{Real-World Robustness:} The fairness gains observed in static benchmarks may differ in production environments subject to distribution shift (data drift) or adversarial behavior. Future work must validate the architecture's resilience to dynamic data updates.
-\end{itemize}
+\section{Limitations}
+Despite these advances, several limitations remain:
+\begin{enumerate}
+    \item \textbf{Causal Reliance on Experts:} The Causal Graph construction in the Silver Layer relies on domain expert elicitation. While we use algorithmic validation to aid this, fully automated causal discovery remains an open research problem. Our current implementation focuses on validation rather than automated feature suppression.
+    \item \textbf{The "Price of Fairness":} As observed in the NIJ experiment, strict fairness constraints led to a performance drop. In scenarios where accuracy is paramount (e.g., violent crime prediction), this trade-off requires careful policy consideration beyond software architecture.
+    \item \textbf{Scope:} Our evaluation focused on tabular data. Unstructured modalities (video, audio) require different privacy mechanisms (e.g., deepfakes for anonymization) not covered here.
+\end{enumerate}
 
 \subsection*{Artifact Availability}
 To support reproducibility, we provide an anonymized code repository with the full FAIR-CARE pipeline implementation and experiment scripts at the following URL (anonymized for review): \url{https://anonymous.4open.science/r/XXXX}. 
 
 
+\section{Threats to Validity}
+
+Despite the structured design of the FAIR-CARE Lakehouse and its alignment with regulatory, causal, and ethical principles, several threats to validity must be acknowledged. These factors affect the interpretation, generalizability, and robustness of the study's findings.
+
+\subsection{Internal Validity}
+Internal validity concerns whether the observed improvements can be reliably attributed to the architecture. 
+A first threat is \textbf{causal graph correctness}: the causal graph construction in the Silver Layer depends on domain expert elicitation and algorithmic discovery (e.g., PC, NOTEARS), and these algorithms are sensitive to hyperparameter choices and may be influenced by unobserved confounders, so flawed structures can lead to ineffective or misleading feature filtering in the Gold Layer. 
+To mitigate this, we relied on refutation tests (e.g., placebo treatments) via \textit{DoWhy}, but automated causal discovery and validation remain open research challenges. 
+A second threat is \textbf{sensitivity to privacy parameters}: the Differential Privacy mechanisms (e.g., Laplace noise) introduce stochasticity, so small deviations in the privacy budget ($\epsilon$) or clipping thresholds can yield different utility–fairness trade-offs, and although we fixed random seeds for reproducibility, single-run results may still vary slightly.
+
+\subsection{External Validity}
+External validity pertains to the generalizability of our findings beyond the datasets and contexts studied. 
+Our evaluation focuses exclusively on structured tabular datasets, which means the behavior of the architecture for unstructured modalities such as video or free-text narratives remains unknown and would require distinct privacy mechanisms (e.g., redaction, blurring) that are not yet implemented in the Silver Layer. 
+Moreover, the datasets used (COMPAS, NIJ, US Census–derived Adult, German Credit) originate from U.S. or closely related socio-legal contexts, so bias patterns and regulatory requirements may differ significantly in international domains (e.g., EU healthcare or social services), and the specific causal structures and fairness–utility trade-offs observed here may not transfer directly.
+
+\subsection{External Validity}
+External validity pertains to the generalizability of our findings beyond the specific datasets and settings considered. Our evaluation focused exclusively on structured tabular datasets, which are common in correctional and financial domains, but do not cover unstructured modalities such as video or free-text narratives that require distinct privacy mechanisms (e.g., redaction, blurring, or text anonymization) not currently implemented in our Silver Layer. Moreover, the datasets used (COMPAS, NIJ, US Census–based Adult) originate from U.S. socio-legal contexts. Bias patterns, sensitive attributes, and regulatory requirements may differ significantly in international domains—for example, EU healthcare or social services—so the specific causal structures and fairness–utility trade-offs observed here may not transfer directly across jurisdictions.
+
+\subsection{Construct Validity}
+Construct validity addresses whether our metrics accurately reflect the ethical constructs under study. We assessed fairness using group-based metrics, specifically Demographic Parity Difference (DPD) and Equalized Odds Difference (EOD), which are standard but do not capture individual fairness, procedural fairness, or long-term societal impact. Similarly, we operationalized \textit{utility} primarily as AUC, which does not reflect calibration, interpretability, or downstream decision impact that may be critical in high-risk domains. In addition, the FAIR-CARE Score is a composite metric whose weighting scheme ($w_S, w_G$) is architecturally defined. While this weighting is meaningful for comparing configurations within our study, different stakeholder priorities or regulatory interpretations might require alternative weightings that, in turn, could lead to different conclusions about the ethical readiness of a given configuration.
+
+\subsection{Conclusion Validity}
+Conclusion validity relates to the statistical strength of our claims. Our quantitative evaluation is based on a limited number of benchmark datasets ($N=4$), and although we observed consistent trends, some paired comparisons lacked statistical significance at the conventional $p < 0.05$ threshold, limiting the strength of inferential claims. Furthermore, the fairness gains demonstrated on static benchmarks may differ in production environments subject to distributional shift (data drift), irregular update cycles, or adversarial behavior. As a result, the real-world robustness of the FAIR-CARE Lakehouse remains to be validated in longitudinal deployments, and future work should incorporate more extensive repetitions, larger and more diverse datasets, and robustness checks under realistic operational conditions.
 
 \section{Conclusion and Future Work}
-We have presented the \textbf{FAIR-CARE Lakehouse}, a reference architecture that transforms the role of the software architect from a builder of systems to a guardian of ethics. By embedding Differential Privacy, Synthetic Data Generation, and Causal Inference into the Medallion data lifecycle, we demonstrate that compliance and fairness need not be post-hoc afterthoughts.
+This paper presented the FAIR-CARE Lakehouse, a reference architecture that unifies FAIR data management principles with ethical governance mechanisms tailored for high-risk AI systems. By extending the Medallion model with privacy-preserving technologies, causal inference components, and lineage-aware enforcement policies, the architecture reframes the data pipeline as a socio-technical system in which fairness, privacy, and regulatory compliance are first-class architectural concerns. In addressing our research questions, we demonstrated that ethical governance can be enforced end-to-end through architectural mechanisms embedded in each stage of the pipeline (RQ1). The combination of differential privacy, synthetic data generation, causal DAG validation, and fairness-aware feature selection forms a technically grounded toolkit that enables enforcement of CARE constraints while maintaining competitive utility (RQ2). Furthermore, we introduced the FAIR-CARE Score as a composite metric that operationalizes ethical readiness and provides a measurable basis for evaluating datasets within high-risk domains (RQ3). These contributions show that architectural design, rather than downstream model adjustments, is the appropriate locus for embedding trustworthy AI principles. Overall, the FAIR-CARE Lakehouse advances the role of software architecture in AI governance by providing a structured, enforceable, and measurable approach to ethical data pipeline design. The architecture offers a foundation upon which future continuous-governance and adaptive compliance mechanisms can be built, supporting the long-term evolution of responsible AI infrastructures.
 
-Our experiments on the NIJ and COMPAS datasets confirm that it is possible to build pipelines that satisfy strict regulatory requirements (GDPR/HIPAA) while maintaining sufficient utility for decision support. The introduction of the \textbf{FAIR-CARE Score} provides organizations with a quantifiable metric to benchmark their ethical data readiness.
+\subsection{Future Work}
 
-\subsection{Future Work: Federated Learning}
-A natural extension of this architecture is \textbf{Federated Learning (FL)}. In correctional contexts, data is often siloed across state departments. Future iterations will integrate frameworks like \textit{NVFlare} or \textit{Ray Fed} to allow model training across these silos without data centralization, offering a higher tier of privacy-by-design.
+An important extension of the FAIR-CARE architecture is its integration with \textbf{Federated Learning (FL)} to support distributed, privacy-preserving model development across institutional boundaries. Correctional data is typically fragmented across jurisdictions, each governed by distinct legal, operational, and infrastructural constraints. Centralizing such data is often infeasible due to regulatory limitations (e.g., GDPR data minimization) and trust concerns among agencies. Incorporating FL frameworks such as \textit{NVFlare}, \textit{Flower}, or \textit{Ray Fed} would enable collaborative training without raw-data movement, thereby elevating the architecture’s privacy-by-design guarantees. From an architectural perspective, FL introduces new dimensions of continuous governance. Privacy budgets must be managed across federated rounds, fairness must be monitored for participating nodes, and causal structures may diverge across data silos. Future work will explore how the FAIR-CARE Score can be extended to a \textit{federated governance score}, reflecting heterogeneity, drift, and cross-site ethical compliance. Automated governance mechanisms such as node-level anomaly detection, fairness-drift monitoring, and DP-aware aggregation are necessary to maintain ethical guarantees under asynchronous and adversarial training conditions. Integrating FL with the FAIR-CARE Lakehouse, therefore, represents not only a technical enhancement but also a natural step toward \textit{continuous architecting} in high-risk AI ecosystems, where data sources evolve independently, and governance must adapt dynamically.
 
 
 \begin{comment}

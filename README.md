@@ -15,9 +15,9 @@ This artifact implements a three-layer Medallion architecture (Bronze–Silver�
 - Regulatory compliance checks (GDPR, HIPAA, CCPA)
 - Composite FAIR-CARE Score for ethical data readiness
 
-## Artifact Scope and Claims Supported
+## Artifact Scope
 
-| Paper Claim | Artifact Component |
+| Paper  | Artifact Component |
 |-------------|-------------------|
 | Bronze Layer (Ingestion, PII Detection, Provenance) | `src/faircare/bronze/` |
 | Silver Layer (Anonymization, Utility, Causal Analysis) | `src/faircare/silver/` |
@@ -33,7 +33,7 @@ This artifact implements a three-layer Medallion architecture (Bronze–Silver�
 ### Hardware
 - **Recommended**: 16 GB RAM, 4+ CPU cores
 - **Minimum**: 8 GB RAM, 2 CPU cores
-- **GPU**: Optional (for LLM experiments)
+- **GPU**: Optional
 
 ### Software
 - **OS**: Linux, macOS, or Windows with WSL2
@@ -41,7 +41,7 @@ This artifact implements a three-layer Medallion architecture (Bronze–Silver�
 - **Python**: 3.9+ (if running natively)
 - **Internet**: Required for dataset downloads
 
-## Quick Installation (10 minutes)
+## Quick Installation
 
 ### Option A: Docker (Recommended)
 
@@ -67,7 +67,6 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
-python -m spacy download en_core_web_sm
 
 # Install package
 pip install -e .
@@ -90,12 +89,7 @@ See `data/raw/README.md` for detailed instructions and URLs:
 - **COMPAS**: ProPublica COMPAS Recidivism Dataset
 - **Adult Census**: UCI Adult Income Dataset
 - **German Credit**: UCI German Credit Dataset
-- **NIJ Recidivism**: NIJ Recidivism Forecasting Challenge (requires NACJD access)
-
-For NIJ, after obtaining the dataset, run:
-```bash
-python scripts/preprocess_nij.py --input path/to/nij_raw.csv --output data/raw/nij/nij.csv
-```
+- **NIJ Recidivism**: NIJ Recidivism Forecasting Challenge
 
 ## One-Command Pipeline Run
 
@@ -155,7 +149,6 @@ docker-compose exec ml python experiments/scripts/runexperiment1.py \
   --output results/exp1.csv
 ```
 
-**Expected Runtime**: ~30 minutes  
 **Output**: `results/exp1.csv` with columns: dataset, config, SB, SS, SG, faircarescore, dpd, eod, utility
 
 ### Experiment 2: Multi-Dataset Benchmarking
@@ -169,7 +162,6 @@ docker-compose exec ml python experiments/scripts/runexperiment2.py \
   --output results/exp2.csv
 ```
 
-**Expected Runtime**: ~45 minutes  
 **Output**: `results/exp2.csv` with fairness, utility, and privacy metrics per dataset
 
 ### Experiment 3: Regulatory Configurations
@@ -183,7 +175,6 @@ docker-compose exec ml python experiments/scripts/runexperiment3.py \
   --output results/exp3.csv
 ```
 
-**Expected Runtime**: ~40 minutes  
 **Output**: `results/exp3.csv` with compliance flags and privacy risk scores
 
 ### Aggregate Results and Generate Figures
@@ -196,33 +187,25 @@ docker-compose exec ml python experiments/scripts/aggregateresults.py \
 
 **Output**: Plots in `results/figures/` matching paper figures
 
-## Using the Dashboard
-
-```bash
-# Start Streamlit dashboard
-docker-compose exec ml streamlit run src/faircare/dashboard/app.py
-
-# Open browser to http://localhost:8501
-```
-
-**Dashboard Pages**:
-- **Overview**: FAIR-CARE scores across datasets
-- **Bronze**: PII detection results, provenance tracking
-- **Silver**: Anonymization metrics, utility assessment, causal graphs
-- **Gold**: Fairness metrics, bias mitigation results
-- **Experiments**: Interactive experiment comparison
-
 ## Running Tests
 
+Tests should be run inside the Docker container to ensure proper Spark environment:
+
 ```bash
+# Start services if not running
+docker-compose up -d
+
 # Run all tests
 docker-compose exec ml pytest tests/ -v
 
-# Run with coverage
-docker-compose exec ml pytest tests/ --cov=faircare --cov-report=html
+# Run with coverage report
+docker-compose exec ml pytest tests/ --cov=faircare --cov-report=term-missing
 
-# Expected: 50+ tests, ~85% coverage
+# Run a specific test file
+docker-compose exec ml pytest tests/test_faircarescore.py -v
 ```
+
+**Expected**: 50+ tests covering Bronze, Silver, Gold layers and FAIR-CARE Score calculation.
 
 ## Troubleshooting
 
@@ -261,7 +244,7 @@ This software is licensed under the Apache License 2.0. See `LICENSE` for detail
 To cite this work:
 ```bibtex
 @software{faircare2025,
-  title = {FAIR-CARE Lakehouse: A Reference Architecture for Ethical AI Data Governance},
+  title = {A Reference Architecture for FAIR and Ethically Governed Data Pipelines in High-Risk AI Domains},
   author = {Anonymous for Review},
   year = {2025},
   license = {Apache-2.0},
@@ -284,5 +267,5 @@ For questions about this artifact: **Anonymous for Review**
 - ✅ Documentation (README + 5 docs)
 - ✅ Dataset download scripts
 - ✅ One-command reproduction
-- ✅ Expected runtime: <60 minutes for full experiments
+- ✅ Expected runtime: ~60 minutes for full experiments
 - ✅ Results tolerance: ±5% of paper values

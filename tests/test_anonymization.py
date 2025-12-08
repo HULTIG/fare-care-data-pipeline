@@ -56,10 +56,11 @@ def test_kanonymity_anonymization(sample_data, spark):
         "quasi_identifiers": ["age", "gender"]
     }
     engine = AnonymizationEngine(config)
-    anonymized_df = engine.anonymize(sample_data, spark)
+    anonymized_df, metadata = engine.anonymize(sample_data, spark)
     
     assert anonymized_df is not None
     assert anonymized_df.count() > 0
+    assert "risk" in metadata
 
 
 def test_kanonymity_reduces_rows(sample_data, spark):
@@ -72,7 +73,7 @@ def test_kanonymity_reduces_rows(sample_data, spark):
         "quasi_identifiers": ["age", "gender", "zip_code"]
     }
     engine = AnonymizationEngine(config)
-    anonymized_df = engine.anonymize(sample_data, spark)
+    anonymized_df, _ = engine.anonymize(sample_data, spark)
     
     # With high k and multiple QIs, some rows should be suppressed
     assert anonymized_df.count() <= original_count
@@ -97,7 +98,7 @@ def test_differential_privacy_anonymization(sample_data, spark):
         "quasi_identifiers": ["age"]
     }
     engine = AnonymizationEngine(config)
-    anonymized_df = engine.anonymize(sample_data, spark)
+    anonymized_df, _ = engine.anonymize(sample_data, spark)
     
     assert anonymized_df is not None
     assert anonymized_df.count() == sample_data.count()  # DP doesn't suppress rows
@@ -113,7 +114,7 @@ def test_differential_privacy_adds_noise(sample_data, spark):
     engine = AnonymizationEngine(config)
     
     original_ages = [row.age for row in sample_data.collect()]
-    anonymized_df = engine.anonymize(sample_data, spark)
+    anonymized_df, _ = engine.anonymize(sample_data, spark)
     anonymized_ages = [row.age for row in anonymized_df.collect()]
     
     # Ages should be different due to noise (with high probability)
@@ -127,7 +128,7 @@ def test_no_anonymization(sample_data, spark):
         "k": 0
     }
     engine = AnonymizationEngine(config)
-    result_df = engine.anonymize(sample_data, spark)
+    result_df, _ = engine.anonymize(sample_data, spark)
     
     # Should return original data unchanged
     assert result_df.count() == sample_data.count()
@@ -141,7 +142,7 @@ def test_empty_quasi_identifiers(sample_data, spark):
         "quasi_identifiers": []
     }
     engine = AnonymizationEngine(config)
-    result_df = engine.anonymize(sample_data, spark)
+    result_df, _ = engine.anonymize(sample_data, spark)
     
     assert result_df is not None
 
@@ -165,7 +166,7 @@ def test_high_k_value(sample_data, spark):
         "quasi_identifiers": ["age", "gender", "zip_code"]
     }
     engine = AnonymizationEngine(config)
-    anonymized_df = engine.anonymize(sample_data, spark)
+    anonymized_df, _ = engine.anonymize(sample_data, spark)
     
     # Should suppress most/all rows
     assert anonymized_df.count() >= 0
@@ -179,6 +180,6 @@ def test_low_epsilon(sample_data, spark):
         "quasi_identifiers": ["age"]
     }
     engine = AnonymizationEngine(config)
-    anonymized_df = engine.anonymize(sample_data, spark)
+    anonymized_df, _ = engine.anonymize(sample_data, spark)
     
     assert anonymized_df.count() == sample_data.count()

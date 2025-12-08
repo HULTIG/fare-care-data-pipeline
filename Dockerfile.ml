@@ -17,27 +17,25 @@ RUN apt-get update && \
 
 # Install Python dependencies
 RUN pip install --no-cache-dir \
-    huggingface-hub==0.25.2 \
     pyspark==3.5.0 \
     delta-spark==3.0.0 \
-    pandas==1.5.3 \
-    numpy==1.23.5 \
-    scikit-learn==1.3.2 \
-    aif360==0.6.0 \
-    fairlearn==0.8.0 \
-    diffprivlib==0.6.3 \
-    causalnex==0.12.1 \
-    dowhy==0.11.1 \
-    ray==2.8.0 \
-    sentence-transformers==2.2.2 \
-    spacy==3.7.2 \
-    presidio-analyzer==2.2.351 \
-    presidio-anonymizer==2.2.351 \
-    pyyaml==6.0.1 \
-    requests==2.31.0
-
-# Download spaCy model
-RUN python -m spacy download en_core_web_sm
+    pandas>=2.0.0 \
+    numpy>=1.24.0 \
+    scikit-learn>=1.3.0 \
+    aif360>=0.6.0 \
+    fairlearn>=0.10.0 \
+    diffprivlib>=0.6.0 \
+    dowhy>=0.11.0 \
+    sentence-transformers>=2.2.0 \
+    huggingface-hub>=0.25.0 \
+    pyyaml>=6.0.0 \
+    requests>=2.31.0 \
+    streamlit>=1.28.0 \
+    plotly>=5.17.0 \
+    matplotlib>=3.8.0 \
+    seaborn>=0.13.0 \
+    pytest>=7.4.0 \
+    pytest-cov>=4.1.0
 
 # Create app directory
 WORKDIR /app

@@ -149,7 +149,7 @@ def test_error_handling(spark):
     """Test error handling with invalid data"""
     data = [(None, None), (None, None)]
     pdf = pd.DataFrame(data, columns=["age", "label"])
-    invalid_df = spark.createDataFrame(pdf)
+    invalid_df = spark.createDataFrame(pdf, schema="age DOUBLE, label DOUBLE")
     
     config = {
         "protected_attribute": "age",

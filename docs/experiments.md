@@ -167,12 +167,11 @@ Set random seeds in config:
 random_seed: 42
 ```
 
-Run multiple trials and average:
+Run multiple trials with different seeds:
 ```bash
 for i in {1..5}; do
   python experiments/scripts/runexperiment1.py --seed $i --output results/exp1_trial${i}.csv
 done
-python experiments/scripts/average_trials.py --inputs results/exp1_trial*.csv --output results/exp1_avg.csv
 ```
 
 ## Troubleshooting
