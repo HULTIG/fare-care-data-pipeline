@@ -20,7 +20,9 @@ class SilverMetrics:
 class GoldMetrics:
     def calculate(self, metadata: dict) -> float:
         # SG = w1*Fairness + w2*FeatureQuality + w3*UtilityRetention
-        fairness_score = 1.0 if abs(metadata.get("statistical_parity_difference", 1.0)) < 0.1 else 0.0
+        spd = metadata.get("statistical_parity_difference")
+        if spd is None: spd = 1.0
+        fairness_score = 1.0 if abs(spd) < 0.1 else 0.0
         feature_score = 0.9 # Placeholder
         utility_score = metadata.get("utility_retention", 0.0) # From Silver/Gold comparison
         

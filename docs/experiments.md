@@ -70,19 +70,6 @@ Evaluate FAIR-CARE performance across diverse datasets with different characteri
 | German | Credit | 1,000 | Age, Foreign | Age discrimination |
 | NIJ | Parole | 25,000+ | Race, Gender | Recidivism prediction |
 
-### Running the Experiment
-
-```bash
-docker-compose exec ml python experiments/scripts/runexperiment2.py \
-  --datasets compas,adult,german,nij \
-  --config experiments/configs/default.yaml \
-  --techniques kanonymity,ldiversity,tcloseness,dp \
-  --output results/exp2.csv \
-  --verbose
-```
-
-### Expected Output
-
 `results/exp2.csv`:
 ```csv
 dataset,technique,SB,SS,SG,faircarescore,dpd,eod,di,utility,info_loss,privacy_risk

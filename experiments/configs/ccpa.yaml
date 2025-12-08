@@ -1,45 +1,28 @@
-# CCPA Configuration
-# Complies with California Consumer Privacy Act
-# Focus on consumer rights and data minimization
+# CCPA Compliance Configuration
+# California Consumer Privacy Act
 
 anonymization:
   technique: "kanonymity"
   k: 5
+  l: 2
+  t: 0.2
   epsilon: 1.0
-  quasi_identifiers: ["age", "zip_code", "gender"]
 
 pii_detection:
   confidence_threshold: 0.85
   techniques: ["regex", "nlp"]
-  entities: ["PERSON", "email", "phone", "ssn", "LOCATION", "ip"]
-  remove_on_detection: false  # Allow opt-out instead
-
-privacy:
-  max_reidentification_risk: 0.15  # More flexible than GDPR
-  functional_separation: true  # Separate pseudonymization keys
-  deletion_support: true  # Right to deletion
-  opt_out_support: true  # Right to opt-out of sale
+  entities: ["PERSON", "email", "phone", "ssn", "location"]
 
 fairness:
-  metrics: ["Statistical Parity Difference", "Disparate Impact"]
+  metrics: ["Statistical Parity Difference", "Equal Opportunity Difference"]
   thresholds:
-    statistical_parity_difference: 0.10
-    disparate_impact: 0.80
+    statistical_parity_difference: 0.1
+    equal_opportunity_difference: 0.1
 
-causal_validation: true
+causal_validation: false
 bias_mitigation: true
 
-compliance:
-  regulation: "CCPA"
-  consumer_rights:
-    - "right_to_know"
-    - "right_to_delete"
-    - "right_to_opt_out"
-    - "right_to_non_discrimination"
-  data_sale_disclosure: true
-  notice_at_collection: true
-
 weights:
-  bronze: 0.30
-  silver: 0.35
-  gold: 0.35
+  bronze: 0.3
+  silver: 0.4
+  gold: 0.3

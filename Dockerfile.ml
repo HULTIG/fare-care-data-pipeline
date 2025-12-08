@@ -16,10 +16,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-# Note: arx4py might need specific installation instructions or a wheel if not on PyPI. 
-# Assuming standard pip installable packages for now or using alternatives if needed.
-# For this blueprint, we will install standard packages.
 RUN pip install --no-cache-dir \
+    huggingface-hub==0.25.2 \
     pyspark==3.5.0 \
     delta-spark==3.0.0 \
     pandas==1.5.3 \
@@ -43,11 +41,6 @@ RUN python -m spacy download en_core_web_sm
 
 # Create app directory
 WORKDIR /app
-
-# Copy source code and configs (will be mounted in dev, but good for prod)
-# COPY src /app/src
-# COPY configs /app/configs
-# COPY scripts /app/scripts
 
 # Set python path
 ENV PYTHONPATH=/app/src

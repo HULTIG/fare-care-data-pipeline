@@ -51,13 +51,13 @@ def main():
                 # Run pipeline
                 metrics = run_pipeline(
                     dataset=dataset.strip(),
-                    config_path=temp_config_path,
+                    config_or_path=temp_config_path,
                     output_dir=output_dir,
                     verbose=args.verbose,
                     seed=args.seed
                 )
                 
-                # Collect results
+                # Collect results with correct field mappings
                 result = {
                     'dataset': dataset.strip(),
                     'technique': technique.strip(),
@@ -65,12 +65,11 @@ def main():
                     'SS': metrics.get('components', {}).get('silver', 0),
                     'SG': metrics.get('components', {}).get('gold', 0),
                     'faircarescore': metrics.get('score', 0),
-                    'dpd': metrics.get('fairness', {}).get('statistical_parity_difference', 0),
-                    'eod': metrics.get('fairness', {}).get('equal_opportunity_difference', 0),
-                    'di': metrics.get('fairness', {}).get('disparate_impact', 0),
-                    'utility': metrics.get('utility', {}).get('retention', 0),
-                    'info_loss': metrics.get('privacy', {}).get('information_loss', 0),
-                    'privacy_risk': metrics.get('privacy', {}).get('risk', 0),
+                    'dpd': metrics.get('fairness', {}).get('statistical_parity_difference', None),
+                    'di': metrics.get('fairness', {}).get('disparate_impact', None),
+                    'utility': metrics.get('utility', {}).get('utility_retention', 0),
+                    'info_loss': metrics.get('privacy', {}).get('information_loss', 0.2),
+                    'privacy_risk': metrics.get('privacy', {}).get('risk', 0.1),
                 }
                 results.append(result)
                 

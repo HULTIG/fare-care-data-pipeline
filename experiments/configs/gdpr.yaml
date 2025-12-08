@@ -1,17 +1,18 @@
-# HIPAA Compliance Configuration
-# Healthcare privacy requirements
+
+# GDPR Compliance Configuration
+# Stricter privacy requirements
 
 anonymization:
   technique: "kanonymity"
-  k: 5
+  k: 10  # Higher k for GDPR
   l: 2
   t: 0.2
-  epsilon: 1.0
+  epsilon: 0.5  # Strict DP
 
 pii_detection:
-  confidence_threshold: 0.9
+  confidence_threshold: 0.95  # Higher confidence
   techniques: ["regex", "nlp"]
-  entities: ["PERSON", "email", "phone", "ssn", "medical", "date"]
+  entities: ["PERSON", "email", "phone", "ssn", "location", "medical"]
 
 fairness:
   metrics: ["Statistical Parity Difference", "Equal Opportunity Difference"]

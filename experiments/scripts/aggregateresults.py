@@ -114,6 +114,8 @@ def plot_benchmark_techniques(df, output_dir):
     axes[0].set_xlabel('FAIR-CARE Score')
     axes[0].set_ylabel('Technique')
     axes[0].set_xlim(0, 1.0)
+    for container in axes[0].containers:
+        axes[0].bar_label(container, fmt='%.3f', padding=3)
     
     # Utility vs Privacy
     grouped = df.groupby('technique')[['utility', 'privacy_risk']].mean()

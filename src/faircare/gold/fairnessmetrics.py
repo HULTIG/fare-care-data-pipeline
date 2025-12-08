@@ -23,9 +23,66 @@ class FairnessMetrics:
         
         if prot_attr and label_col:
             try:
+                # Debug: Check columns
+                # print(f"FairnessMetrics Input Columns: {pdf.columns.tolist()}") 
+                
+                # Handle '?' as NaN (common in Adult)
+                import numpy as np
+                pdf = pdf.replace('?', np.nan)
+                pdf = pdf.replace(' ?', np.nan)
+                
+                # AIF360 requires no NAs. Impute standardly:
+                for col in pdf.select_dtypes(include=[np.number]).columns:
+                     pdf[col] = pdf[col].fillna(0)
+                for col in pdf.select_dtypes(include=['object', 'category']).columns:
+                    pdf[col] = pdf[col].fillna("Unknown")
+                
+                # Drop any lingering NAs/Infs
+                pdf = pdf.replace([np.inf, -np.inf], np.nan).dropna()
+                
+                # Drop datetime/timestamp columns to avoid casting errors (COMPAS fix)
+                pdf = pdf.select_dtypes(exclude=['datetime', 'timedelta', 'datetimetz'])
+                
+                # Strip whitespace from ALL string columns (Adult fix)
+                df_obj = pdf.select_dtypes(['object'])
+                pdf[df_obj.columns] = df_obj.apply(lambda x: x.str.strip())
+                
+                # ENCODE CATEGORICALS (Critical for AIF360)
+                from sklearn.preprocessing import LabelEncoder
+                label_encoders = {}
+                for col in pdf.select_dtypes(include=['object', 'category']).columns:
+                    le = LabelEncoder()
+                    pdf[col] = le.fit_transform(pdf[col].astype(str))
+                    label_encoders[col] = le
+                
+                # Map Config values to Encoded values
+                favorable_label = self.config.get("favorable_label", 1)
+                
+                # If label string encoded, map favorable label
+                if label_col in label_encoders:
+                    classes = label_encoders[label_col].classes_
+                    if str(favorable_label) in classes:
+                        favorable_label = int(label_encoders[label_col].transform([str(favorable_label)])[0])
+                
+                # Handle privileged group encoding
+                priv_group_encoded = priv_group.copy()
+                for k, v in priv_group.items():
+                    if k in label_encoders:
+                        try:
+                            priv_group_encoded[k] = int(label_encoders[k].transform([str(v)])[0])
+                        except: pass
+                
+                unpriv_group_encoded = unpriv_group.copy()
+                for k, v in unpriv_group.items():
+                    if k in label_encoders:
+                        try:
+                             unpriv_group_encoded[k] = int(label_encoders[k].transform([str(v)])[0])
+                        except: pass
+
+                
                 dataset = BinaryLabelDataset(
-                    favorable_label=self.config.get("favorable_label", 1),
-                    unfavorable_label=0 if self.config.get("favorable_label") == 1 else 1,
+                    favorable_label=favorable_label,
+                    unfavorable_label=0 if favorable_label == 1 else 1, # Simple assumption for binary
                     df=pdf,
                     label_names=[label_col],
                     protected_attribute_names=[prot_attr]
@@ -33,13 +90,14 @@ class FairnessMetrics:
                 
                 metric = BinaryLabelDatasetMetric(
                     dataset,
-                    unprivileged_groups=[unpriv_group],
-                    privileged_groups=[priv_group]
+                    unprivileged_groups=[unpriv_group_encoded],
+                    privileged_groups=[priv_group_encoded]
                 )
                 
                 report["statistical_parity_difference"] = metric.statistical_parity_difference()
                 report["disparate_impact"] = metric.disparate_impact()
-                # EOD requires predictions, skipping for dataset-only metrics or implementing if needed
+                # Note: equal_opportunity_difference requires predictions (ClassificationMetric)
+                # and is not available in BinaryLabelDatasetMetric (dataset-level metrics)
                 
             except Exception as e:
                 print(f"Fairness metrics calculation failed: {e}")

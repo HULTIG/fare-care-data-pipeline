@@ -121,12 +121,18 @@ python -m faircare.orchestration.pipeline \
 
 ```
 results/compas_demo/
-├── bronze/                    # Bronze Delta tables
-├── silver/                    # Silver Delta tables
-├── gold/                      # Gold Delta tables
+
 ├── logs/
 │   └── audit_log.json        # Provenance trail
 └── compas_metricssummary.json # FAIR-CARE scores and metrics
+data/processed/
+
+├── bronze/
+│   └── {dataset_name}_raw.delta/     # Raw ingested data (Bronze Layer)
+├── silver/
+│   └── {dataset_name}_anonymized.delta/ # Anonymized, utility-validated data (Silver Layer)
+└── gold/
+    └── {dataset_name}_final.delta/   # Bias-mitigated, fairness-checked data (Gold Layer)
 ```
 
 **Key Metrics in `compas_metricssummary.json`**:
@@ -159,7 +165,7 @@ Compares FAIR-CARE performance across all four datasets.
 ```bash
 docker-compose exec ml python experiments/scripts/runexperiment2.py \
   --datasets compas,adult,german,nij \
-  --config experiments/configs/default.yaml \
+  --config configs/default.yaml \
   --output results/exp2.csv
 ```
 
@@ -246,7 +252,7 @@ See `docs/installation.md` for detailed troubleshooting.
 - **[Installation](docs/installation.md)**: Detailed setup instructions
 - **[Experiments](docs/experiments.md)**: Step-by-step experiment reproduction
 - **[Configuration](docs/configuration.md)**: Config file reference
-- **[API](docs/api.md)**: Python API documentation
+- **[API Reference](docs/API_REFERENCE.md)**: Python API documentation
 
 ## License and Citation
 

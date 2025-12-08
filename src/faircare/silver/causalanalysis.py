@@ -22,6 +22,21 @@ class CausalAnalyzer:
         
         if treatment and outcome and treatment in pdf.columns and outcome in pdf.columns:
             try:
+                # Preprocessing for DoWhy:
+                # 1. Drop datetime/internal columns
+                pdf = pdf.select_dtypes(exclude=['datetime', 'timedelta'])
+                pdf = pdf.drop(columns=[c for c in pdf.columns if c.startswith("_")], errors='ignore')
+                
+                # 2. Fill NAs
+                pdf = pdf.fillna(method='ffill').fillna(0)
+                
+                # 3. Encode object columns
+                from sklearn.preprocessing import LabelEncoder
+                le = LabelEncoder()
+                for col in pdf.select_dtypes(include='object').columns:
+                    pdf[col] = le.fit_transform(pdf[col].astype(str))
+
+                # Define Causal Model
                 # Define Causal Model
                 model = CausalModel(
                     data=pdf,

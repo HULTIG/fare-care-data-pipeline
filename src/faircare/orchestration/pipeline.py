@@ -21,12 +21,15 @@ def load_config(config_path):
     with open(config_path, 'r') as f:
         return yaml.safe_load(f)
 
-def run_pipeline(dataset, config_path, output_dir, verbose=False, seed=42):
+def run_pipeline(dataset, config_or_path, output_dir, verbose=False, seed=42):
     """
     Run the FAIR-CARE pipeline and return metrics.
     Used by experiment scripts.
     """
-    config = load_config(config_path)
+    if isinstance(config_or_path, dict):
+        config = config_or_path
+    else:
+        config = load_config(config_or_path)
     dataset_config = config['datasets'].get(dataset)
     if not dataset_config:
         raise ValueError(f"Dataset {dataset} not found in config.")
@@ -37,6 +40,7 @@ def run_pipeline(dataset, config_path, output_dir, verbose=False, seed=42):
         .config("spark.jars.packages", "io.delta:delta-spark_2.12:3.0.0") \
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
         .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog") \
+        .config("spark.databricks.delta.schema.autoMerge.enabled", "true") \
         .getOrCreate()
 
     audit = AuditTrail(log_dir=os.path.join(output_dir, "logs"))
@@ -47,7 +51,10 @@ def run_pipeline(dataset, config_path, output_dir, verbose=False, seed=42):
     bronze_df = ingestion.ingest(
         dataset_config['raw_path'], 
         dataset_config['bronze_path'], 
-        dataset
+        dataset,
+        has_header=dataset_config.get('has_header', True),
+        column_names=dataset_config.get('column_names'),
+        delimiter=dataset_config.get('delimiter', ',')
     )
     
     pii_detector = PIIDetection(config.get('pii_detection', {}))
@@ -69,8 +76,8 @@ def run_pipeline(dataset, config_path, output_dir, verbose=False, seed=42):
     anon_config['label_column'] = dataset_config.get('label_column')
     
     anonymizer = AnonymizationEngine(anon_config)
-    silver_df = anonymizer.anonymize(bronze_df, spark)
-    silver_df.write.format("delta").mode("overwrite").save(dataset_config['silver_path'])
+    silver_df, silver_meta = anonymizer.anonymize(bronze_df, spark)
+    silver_df.write.format("delta").mode("overwrite").option("overwriteSchema", "true").save(dataset_config['silver_path'])
     
     utility_assessor = UtilityAssessment(dataset_config)
     utility_report = utility_assessor.assess(bronze_df, silver_df)
@@ -84,7 +91,8 @@ def run_pipeline(dataset, config_path, output_dir, verbose=False, seed=42):
     silver_metrics = SilverMetrics()
     ss = silver_metrics.calculate({
         "utility_retention": utility_report.get("utility_retention", 0),
-        "causal_validity": causal_report.get("causal_validity", "FAIL")
+        "causal_validity": causal_report.get("causal_validity", "FAIL"),
+        "risk": silver_meta.get("risk", 1.0)
     })
     if verbose: print(f"Silver Score (SS): {ss}")
 
@@ -99,7 +107,7 @@ def run_pipeline(dataset, config_path, output_dir, verbose=False, seed=42):
     embeddings_gen = EmbeddingsGenerator(dataset_config)
     gold_df = embeddings_gen.generate(gold_df, spark)
     
-    gold_df.write.format("delta").mode("overwrite").save(dataset_config['gold_path'])
+    gold_df.write.format("delta").mode("overwrite").option("overwriteSchema", "true").save(dataset_config['gold_path'])
     
     fairness_metrics = FairnessMetrics(dataset_config)
     fairness_report = fairness_metrics.calculate(gold_df)
@@ -122,7 +130,7 @@ def run_pipeline(dataset, config_path, output_dir, verbose=False, seed=42):
     final_score['fairness'] = fairness_report
     final_score['utility'] = utility_report
     final_score['privacy'] = {
-        'risk': anon_config.get('privacy_risk', 0.1),
+        'risk': silver_meta.get('risk', anon_config.get('privacy_risk', 0.1)),
         'information_loss': anon_config.get('info_loss', 0.2)
     }
     final_score['anonymization'] = {

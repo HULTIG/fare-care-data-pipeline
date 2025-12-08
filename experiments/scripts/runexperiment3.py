@@ -12,6 +12,15 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 from faircare.orchestration.pipeline import run_pipeline
 
+def nested_update(base, update):
+    """Recursively update nested dictionaries."""
+    for key, value in update.items():
+        if isinstance(value, dict) and key in base and isinstance(base[key], dict):
+            nested_update(base[key], value)
+        else:
+            base[key] = value
+    return base
+
 def main():
     parser = argparse.ArgumentParser(description="Experiment 3: Regulatory Compliance")
     parser.add_argument("--datasets", required=True, help="Comma-separated dataset names")
@@ -32,14 +41,25 @@ def main():
             print(f"Running: {dataset} with {regulation.upper()}")
             print(f"{'='*60}\n")
             
-            config_path = f"experiments/configs/{regulation.strip()}.yaml"
+            # Load base config with dataset definitions
+            with open('configs/default.yaml', 'r') as f:
+                base_config = yaml.safe_load(f)
+            
+            # Load regulatory config and merge
+            reg_config_path = f"experiments/configs/{regulation.strip()}.yaml"
+            with open(reg_config_path, 'r') as f:
+                reg_config = yaml.safe_load(f)
+            
+            # Merge configs
+            merged_config = nested_update(base_config.copy(), reg_config)
+            
             output_dir = f"results/exp3/{dataset}_{regulation}"
             
             try:
-                # Run pipeline
+                # Run pipeline with merged config
                 metrics = run_pipeline(
                     dataset=dataset.strip(),
-                    config_path=config_path,
+                    config_or_path=merged_config,  # Pass dict instead of path
                     output_dir=output_dir,
                     verbose=args.verbose,
                     seed=args.seed

@@ -25,9 +25,7 @@ datasets:
     unprivileged_groups: [{"sex": "Female"}]
     label_column: "income"
     favorable_label: ">50K"
-    quasi_identifiers: ["age", "education", "marital_status", "occupation", "relationship", "race", "native_country"]
-    has_header: false
-    column_names: ["age", "workclass", "fnlwgt", "education", "education_num", "marital_status", "occupation", "relationship", "race", "sex", "capital_gain", "capital_loss", "hours_per_week", "native_country", "income"]
+    quasi_identifiers: ["age", "education", "marital-status", "occupation", "relationship", "race", "native-country"]
 
   german:
     source_url: "https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/german/german.data"
@@ -35,17 +33,13 @@ datasets:
     bronze_path: "data/processed/bronze/german"
     silver_path: "data/processed/silver/german"
     gold_path: "data/processed/gold/german"
-    sensitive_attributes: ["personal_status_sex", "age"] # 'sex' is encoded in 'personal_status_sex'
-    protected_attribute: "personal_status_sex"
-    privileged_groups: [{"personal_status_sex": "A91"}]  # A91, A93, A94 are male codes
-    unprivileged_groups: [{"personal_status_sex": "A92"}]  # A92, A95 are female codes
+    sensitive_attributes: ["sex", "age"] # 'sex' is often encoded in 'personal_status_sex'
+    protected_attribute: "sex"
+    privileged_groups: [{"sex": "male"}]
+    unprivileged_groups: [{"sex": "female"}]
     label_column: "credit_risk"
-    favorable_label: 1 # 1 is Good, 2 is Bad
-    quasi_identifiers: ["age", "job", "housing", "savings_status", "checking_status"]
-    has_header: false
-    delimiter: " "  # Space-separated values
-    # Statlog German (original) has 20 attributes + class. Column names approximated from documentation.
-    column_names: ["checking_status", "duration", "credit_history", "purpose", "credit_amount", "savings_status", "employment", "installment_rate", "personal_status_sex", "other_parties", "residence_since", "property_magnitude", "age", "other_payment_plans", "housing", "existing_credits", "job", "num_dependents", "own_telephone", "foreign_worker", "credit_risk"]
+    favorable_label: 1 # 1 is Good, 2 is Bad usually
+    quasi_identifiers: ["age", "job", "housing", "savings", "checking_account"]
 
   nij:
     source_url: "https://nij.ojp.gov/sites/g/files/xyckuh171/files/media/document/nij-challenge2021_full_dataset.csv"
@@ -59,7 +53,7 @@ datasets:
     unprivileged_groups: [{"Race": "Black"}]
     label_column: "Recidivism_Arrest_Year1"
     favorable_label: false
-    quasi_identifiers: ["Age_at_Release", "Gang_Affiliated", "Supervision_Level_First"]
+    quasi_identifiers: ["Age_at_Release", "Gang_Affiliation", "Supervision_Level_First"]
 
 pii_detection:
   confidence_threshold: 0.8

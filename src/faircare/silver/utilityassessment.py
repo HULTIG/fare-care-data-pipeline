@@ -63,9 +63,13 @@ class UtilityAssessment:
         for col in X.select_dtypes(include=['object', 'category']).columns:
             X[col] = LabelEncoder().fit_transform(X[col].astype(str))
             
-        # Encode label if needed
         if y.dtype == 'object':
             y = LabelEncoder().fit_transform(y.astype(str))
+            
+        # Exclude datetime and internal columns
+        X = X.select_dtypes(exclude=['datetime', 'timedelta'])
+        cols_to_drop = [c for c in X.columns if c.startswith("_")]
+        X = X.drop(columns=cols_to_drop, errors='ignore')
             
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
         
