@@ -15,6 +15,8 @@ This artifact implements a three-layer Medallion architecture (Bronzeâ€“Silverâ€
 - Regulatory compliance checks (GDPR, HIPAA, CCPA)
 - Composite FAIR-CARE Score for ethical data readiness
 
+![FAIR-CARE Architecture](docs/img/fair-care-arch.png)
+
 ## Artifact Scope
 
 | Paper  | Artifact Component |
