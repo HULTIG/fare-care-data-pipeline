@@ -15,6 +15,8 @@ This artifact implements a three-layer Medallion architecture (Bronze–Silver�
 - Regulatory compliance checks (GDPR, HIPAA, CCPA)
 - Composite FAIR-CARE Score for ethical data readiness
 
+![FAIR-CARE Architecture](paper-draft/images/fair-care-arch.png)
+
 ## Artifact Scope
 
 | Paper  | Artifact Component |
@@ -206,28 +208,6 @@ docker-compose exec ml pytest tests/test_faircarescore.py -v
 ```
 
 **Expected**: 50+ tests covering Bronze, Silver, Gold layers and FAIR-CARE Score calculation.
-
-## Troubleshooting
-
-### Common Issues
-
-**Bronze Layer: PII Detection Timeout**
-- Reduce sample size in `configs/default.yaml`: `pii_detection.sample_size: 500`
-
-**Silver Layer: High Information Loss**
-- Decrease k-anonymity: `anonymization.k: 3`
-- Increase epsilon for DP: `anonymization.epsilon: 2.0`
-
-**FAIR-CARE Score Plateaus at ~0.75**
-- Check utility retention in Silver layer
-- Review causal validation results
-- Adjust fairness thresholds
-
-**GDPR Compliance Fails**
-- Ensure k ≥ 5 and epsilon ≤ 1.0
-- Check privacy risk in `metricssummary.json`
-
-See `docs/installation.md` for detailed troubleshooting.
 
 ## Documentation
 
