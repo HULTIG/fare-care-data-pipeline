@@ -96,23 +96,6 @@ Raw CSV → Bronze (Ingest + PII) → Silver (Anonymize + Causal) → Gold (Fair
            └────────────────────────┴──────────────────────────────→ FAIR-CARE Score
 ```
 
-## Regulatory Compliance
-
-### GDPR Mode
-- k ≥ 10, epsilon ≤ 0.5
-- Re-identification risk < 0.05
-- Right to erasure support via pseudonymization keys
-
-### HIPAA Mode
-- Safe Harbor: Remove 18 identifiers
-- Expert Determination: DP + synthetic data
-- Audit trail for all PHI access
-
-### CCPA Mode
-- Functional separation of pseudonymization keys
-- Deletion/opt-out semantics
-- Consumer data rights enforcement
-
 ## Technology Stack
 
 - **Storage**: Delta Lake (ACID transactions, time travel)
@@ -120,5 +103,4 @@ Raw CSV → Bronze (Ingest + PII) → Silver (Anonymize + Causal) → Gold (Fair
 - **Privacy**: diffprivlib, ARX (k-anonymity)
 - **Fairness**: AIF360, Fairlearn
 - **Causal**: DoWhy, CausalNex
-- **Embeddings**: Sentence-BERT
 - **Dashboard**: Streamlit
