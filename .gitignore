@@ -19,12 +19,15 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Virtual environments
 venv/
+.venv/
 ENV/
 env/
 
 # Jupyter
-.ipynb_checkpoints
+.ipynb_checkpoints/
 *.ipynb_checkpoints
 
 # IDEs
@@ -33,18 +36,20 @@ env/
 *.swp
 *.swo
 *~
+*.code-workspace
 
-# Data
-# data/raw/*
-!data/raw/README.md
+# Data files
 data/processed/
 *.csv
 *.parquet
 *.delta
-paper-draft/*
 
-# Results
+# Paper draft (kept locally only)
+paper-draft/
+
+# Results and logs
 results/
+logs/
 *.log
 
 # OS
@@ -58,3 +63,16 @@ Thumbs.db
 metastore_db/
 derby.log
 spark-warehouse/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary files
+*.tmp
+*.temp
+--*
+context/
+
+PROJECT_SUMMARY.md

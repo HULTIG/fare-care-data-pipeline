@@ -14,14 +14,6 @@ def analyze_exp1(filepath):
     pivot = df.pivot(index='dataset', columns='config', values='faircarescore')
     print("Scores by Config:")
     print(pivot)
-    
-    # Compare Baseline vs Review (assuming 'configc' or similar is the full model? 
-    # Need to check semantic of configs. 
-    # Based on README: configa, configb, configc. 
-    # Paper says: Baseline, Config A, Config B, Full FAIR-CARE.
-    # Let's assume 'configc' might be the full one or I'll look for another one.
-    # Actually, let's look at the columns in df.
-    pass
 
 def analyze_exp2(filepath):
     print(f"\nAnalyzing {filepath} (Benchmarking)...")
