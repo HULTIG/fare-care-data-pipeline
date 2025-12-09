@@ -9,7 +9,7 @@ def get_config_for_dataset(name):
     elif name == 'adult':
         return {'target': 'income', 'sensitive': ['race', 'sex']}
     elif name == 'german':
-        return {'target': 'risk', 'sensitive': ['sex', 'age']} # 'credit_risk' maybe?
+        return {'target': 'risk', 'sensitive': ['sex', 'age']}
     elif name == 'nij':
         return {'target': 'Recidivism_Arrest_Year1', 'sensitive': ['Race', 'Gender']} 
     return {'target': 'target', 'sensitive': []}
@@ -22,20 +22,16 @@ def analyze_dataset(name, path):
     
     try:
         if name == 'adult':
-            # Adult often has no header. Providing standard names.
             cols = ["age", "workclass", "fnlwgt", "education", "education-num", "marital-status", 
                     "occupation", "relationship", "race", "sex", "capital-gain", "capital-loss", 
                     "hours-per-week", "native-country", "income"]
             df = pd.read_csv(path, names=cols, skipinitialspace=True)
         elif name == 'german':
-            # German is often space separated
             cols = ["status", "duration", "credit_history", "purpose", "amount", "savings", "employment_duration", 
                     "installment_rate", "personal_status_sex", "other_debtors", "residence_since", "property", 
                     "age", "other_installment_plans", "housing", "number_credits", "job", "people_liable", 
                     "telephone", "foreign_worker", "risk"]
             df = pd.read_csv(path, sep=r'\s+', names=cols)
-            # Map personal_status_sex to sex if needed (complex encoding in german dataset), 
-            # or just report age as sensitive.
         else:
             df = pd.read_csv(path)
     except Exception as e:
