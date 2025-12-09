@@ -41,6 +41,7 @@ data/processed/
 *.csv
 *.parquet
 *.delta
+paper-draft/*
 
 # Results
 results/
