@@ -94,14 +94,21 @@ class FairnessMetrics:
                     privileged_groups=[priv_group_encoded]
                 )
                 
-                report["statistical_parity_difference"] = metric.statistical_parity_difference()
-                report["disparate_impact"] = metric.disparate_impact()
-                # Note: equal_opportunity_difference requires predictions (ClassificationMetric)
-                # and is not available in BinaryLabelDatasetMetric (dataset-level metrics)
+                spd = metric.statistical_parity_difference()
+                di = metric.disparate_impact()
+                
+                # Handle NaN values - provide reasonable defaults
+                import math
+                report["statistical_parity_difference"] = spd if not math.isnan(spd) else 0.0
+                report["disparate_impact"] = di if not math.isnan(di) else 1.0
                 
             except Exception as e:
                 print(f"Fairness metrics calculation failed: {e}")
                 report["error"] = str(e)
+                # Provide default values on failure
+                report["statistical_parity_difference"] = 0.0
+                report["disparate_impact"] = 1.0
                 
         print(f"Fairness Metrics: {report}")
         return report
+

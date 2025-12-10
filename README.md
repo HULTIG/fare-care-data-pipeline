@@ -117,12 +117,11 @@ python -m faircare.orchestration.pipeline \
 
 ```
 results/compas_demo/
-
 ├── logs/
 │   └── audit_log.json        # Provenance trail
 └── compas_metricssummary.json # FAIR-CARE scores and metrics
-data/processed/
 
+data/processed/
 ├── bronze/
 │   └── {dataset_name}_raw.delta/     # Raw ingested data (Bronze Layer)
 ├── silver/
